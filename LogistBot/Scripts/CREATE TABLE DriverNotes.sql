@@ -1,0 +1,4 @@
+CREATE TABLE DriverNotes(
+    id BIGINT PRIMARY KEY,
+    note VARCHAR(1024)
+)

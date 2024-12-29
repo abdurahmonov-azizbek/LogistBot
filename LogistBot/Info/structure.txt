@@ -1,0 +1,93 @@
+Register page
+
+Register 1: Carrier
+            
+           >>> Company info 1-7
+                      
+                      Company name: For Example LLC
+                      DOT: 0000000
+                      MC: 000000
+                      Address: Address, city, state, zip code.
+                      Current Trucks: 00
+                      Company email: info@forexamplellc.com 
+                      Company contact:  (000) 000 - 0000
+           
+        >>> Special load offered:
+           
+                      Amazon: Yes/No/Skip
+                      PO Loads: Yes/No/Skip
+                      Dry Van: Yes/No/Skip
+                      Broker Loads: Yes/No/Skip
+                      Line Loads: Yes/No/Skip 
+                   
+
+         >>> Offer for company driver:
+                      
+                      Driver salary for solo:  0.00 - 0.00 ( $ or %)
+                      Driver salary for team:  0.00 - 0.00 ( $ or %)
+                      Escrow: 0$ per week | $0 Total
+                      Layover: $0.00
+                      Detention for each extra stop: $0.00 per (miles)
+                      
+                      Available truck numbers:  0
+                      Available trucks make: make an example 
+                      Truck speed: 00 (MPH)
+                     
+                      Minimum experience requirement: 0 (months/years)
+
+
+           >>> Offer for onwer driver: 1-5
+                      
+                      Dispatch service: 0 %
+                      Safety service: 0 % / $0
+                      Office admin: 0 % / $0
+                      IFTA: $0
+                      Insurance: $0 per week/month
+                     
+
+             >>> Offer for lease driver:
+                      
+                      Truck rental fee: $0 per week/month
+                      Truck  Miles: $0.00 per mile
+                      Dispatch service: 0 %
+                      Safety service: 0 % / $0
+                      Office admin: 0 % / $0
+                      IFTA: $0
+                      Insurance: $0 per week/month
+
+
+
+Register 2: Driver
+             Chose type of Driver: Company/Owner/Lease
+     
+      >>> Driver info
+             
+             First name: Adam
+             Last name: Anderson
+             Birth day: month/day/year
+             Address: Address, city, state, zip code.
+             Email: info@forexample.com
+             Phone number:  (000) 000 - 0000
+
+          (Only company driver dan shuni sorash kere, qolgan driver laga buni sorash keremas):
+             Miles daily:  0 - 0 miles
+             Miles Weekly : 0 - 0 miles
+             Work days:  0 weeks/months 
+             Home days :   0 - 0 days 
+             Night or Day time PU:  Yes/No/Skip 
+             
+          
+      >>> CDL
+
+             CDL#: VT0000000
+             State of CDL:  OH
+             Class: A/B/C/D
+             CDL Expire date (EXP): month/day/year
+             CDL issue date (ISS): month/day/year
+           
+            
+      >>>  Medical Card 
+             
+             Medical Card National Registry: 0000000000
+             Medical Card expiration date: month/day/year
+             Medical Card date certificate signed: month/day/year

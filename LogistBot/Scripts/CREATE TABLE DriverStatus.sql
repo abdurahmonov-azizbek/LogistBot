@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS DriverStatus(
+    id BIGINT PRIMARY KEY,
+    is_active BOOLEAN DEFAULT TRUE
+)
