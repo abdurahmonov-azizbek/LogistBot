@@ -230,8 +230,8 @@ def create_telegram_user_keyboard(telegram_id: int, phone: str):
                 InlineKeyboardButton(
                     text="Open Telegram Chat 📩",
                     url=f"tg://user?id={telegram_id}",  # Telegram ID orqali shaxsiy chatga yo'naltirish
-                ),
-                InlineKeyboardButton(text="Call 📞", url=f"tel:+998970183595"),
+                )
+                # InlineKeyboardButton(text="Call 📞", url=f"tel:+998970183595"),
             ]
         ]
     )

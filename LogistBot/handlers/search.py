@@ -219,7 +219,7 @@ async def handle_driver_callback(callback_query: types.CallbackQuery, callback_d
 
             # Driverga xabar yuborish
             driver_message = (
-                f"New reques⚡️\n"+
+                f"New request⚡️\n"+
                 f"Company id: {company['id']}\n"+
                 f"Name: {company['company_name']}\n"+
                 f"DOT: {company['dot']}\n"+
