@@ -69,7 +69,7 @@ async def show_options(message: types.Message):
     driver = await get_by_id(user_id, "drivers")
     if driver:
         driver_info_menu = []
-        if driver['miles_dialy'] == None and driver['work_days_type'] == None and driver['home_days'] == None  and driver['nigth_or_day_time_pu']:
+        if driver['miles_dialy'] is None:
             driver_info_menu.append([KeyboardButton(text="More info (only for Company drivers)")])
 
         cdl = await get_by_id(user_id, "cdls")
