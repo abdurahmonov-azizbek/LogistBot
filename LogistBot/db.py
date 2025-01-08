@@ -9,22 +9,17 @@ async def save_lease_driver_offer(data: dict):
     conn = await get_db_connection()
 
     query = """
-        INSERT INTO LeaseDriverOffers (id, truck_rental_fee_type, truck_rental_fee, truck_miles, dispatch_service, safety_service_type, safety_service, office_admin_type, office_admin, ifta, insurance_type, insurance)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        INSERT INTO LeaseDriverOffers (id, truck_rental_fee, truck_miles, dispatch_service, office_admin_usd, ifta, insurance_type, insurance)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
     """
 
     await conn.execute(
         query,
         data['id'],
-        data['TruckRentalFeeType'],
         data['TruckRentalFee'],
         data['TruckMiles'],
         data['DispatchService'],
-        data['SafetyServiceType'],
-        data['SafetyService'],
-        # data['OfficeAdminType'],
-        'xxx',
-        data['OfficeAdmin'],
+        data['OfficeAdminUsd'],
         data['Ifta'],
         data['InsuranceType'],
         data['Insurance']
@@ -110,21 +105,16 @@ async def update_driver_filter(data: dict):
 async def save_owner_driver_offer(data: dict):
     conn = await get_db_connection()
     query = """
-        INSERT INTO OwnerDriverOffers (id, dispatch_service, safety_service_type, safety_service, office_admin_type, office_admin, ifta, insurance_type, insurance)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        INSERT INTO OwnerDriverOffers (id, dispatch_service, office_admin_usd, ifta, insurance)
+        VALUES ($1, $2, $3, $4, $5)
     """
 
     await conn.execute(
         query,
         data['id'],
         data['DispatchService'],
-        data['SafetyServiceType'],
-        data['SafetyService'],
-        # data['OfficeAdminType'],
-        'xxx',
         data['OfficeAdmin'],
         data['Ifta'],
-        data['InsuranceType'],
         data['Insurance']
     )
 
@@ -183,21 +173,19 @@ async def get_all_drivers():
 async def save_company_driver_offer(data: dict):
     conn = await get_db_connection()
     query = """
-        INSERT INTO CompanyDriverOffers (id, driver_salary_for_solo_type, driver_salary_for_solo, driver_salary_for_team_type, driver_salary_for_team, escrow_per_week, escrow_total, layover, detension_for_each_extra_stop, avaiable_truck_numbers, avaiable_trucks_make, truck_speed, minimum_experience_requirement)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+        INSERT INTO CompanyDriverOffers (id, driver_salary_for_solo_usd, driver_salary_for_solo_percentage, driver_salary_for_team_usd, escrow_per_week, escrow_total, layover, avaiable_truck_numbers, avaiable_trucks_make, truck_speed, minimum_experience_requirement)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
     """
 
     await conn.execute(
         query,
         data['id'],
-        data['DriverSalaryForSoloType'],
-        data['DriverSalaryForSolo'],
-        data['DriverSalaryForTeamType'],
-        data['DriverSalaryForTeam'],
+        data['DriverSalaryForSoloUsd'],
+        data['DriverSalaryForSoloPercentage'],
+        data['DriverSalaryForTeamUsd'],
         data['EscrowPerWeek'],
         data['EscrowTotal'],
         data['Layover'],
-        data['DetensionForEachExtraStop'],
         data['AvaiableTruckNumbers'],
         data['AvaiableTrucksMake'],
         data['TruckSpeed'],
@@ -209,8 +197,8 @@ async def save_company_driver_offer(data: dict):
 async def save_special_loads(data: dict):
     conn = await get_db_connection()
     query = """
-        INSERT INTO SpecialLoads (id, amazon, po_loads, dry_van, broker_loads, line_loads)
-        VALUES ($1, $2, $3, $4, $5, $6)
+        INSERT INTO SpecialLoads (id, amazon, po_loads, dry_van, line_loads)
+        VALUES ($1, $2, $3, $4, $5)
     """
 
     await conn.execute(
@@ -219,7 +207,6 @@ async def save_special_loads(data: dict):
         data["amazon"],
         data["po_loads"],
         data["dry_van"],
-        data["broker_loads"],
         data["line_loads"]
     )
 

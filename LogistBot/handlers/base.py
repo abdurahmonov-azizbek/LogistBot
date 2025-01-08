@@ -7,6 +7,8 @@ from aiogram.filters.callback_data import CallbackData
 from db import *
 from .functions import *
 import keyboars
+import asyncio
+from config import ADMINS
 
 router = Router()
 
@@ -19,14 +21,20 @@ async def show_account(message: types.Message):
         user_id = message.from_user.id
         company = await get_by_id(user_id, "companies")
         if company:
-            company_information = await get_company_full_info(company=company, user_id=user_id)
-            await message.answer(company_information)
+            company_informations = await get_company_full_info(company=company, user_id=user_id)
+            for info in company_informations:
+                await message.answer(info)
+                await asyncio.sleep(1)
+
             return
         
         driver = await get_by_id(user_id, "drivers")
         if driver:
             driver_information = await get_driver_full_info(driver, user_id)
-            await message.answer(driver_information)
+            for driver_info in driver_information:
+                await message.answer(driver_info)
+                await asyncio.sleep(1)
+                
             return
     except:
         await message.answer("Something went wrong, sorry.")
@@ -69,7 +77,7 @@ async def show_options(message: types.Message):
     driver = await get_by_id(user_id, "drivers")
     if driver:
         driver_info_menu = []
-        if driver['miles_dialy'] is None:
+        if driver['driver_type'] == "Company driver" and (driver['miles_dialy'] == None and driver['nigth_or_day_time_PU'] == None):
             driver_info_menu.append([KeyboardButton(text="More info (only for Company drivers)")])
 
         cdl = await get_by_id(user_id, "cdls")
@@ -88,6 +96,9 @@ async def show_options(message: types.Message):
             await message.answer("You have filled all information.")
             return 
         
+
+        driver_info_menu.append([KeyboardButton(text="CDL (image)")])
+
         driver_info_menu.append([KeyboardButton(text="◀️Back to Main Menu")])
 
 
@@ -185,8 +196,15 @@ async def ask_Column(message: types.Message, state: FSMContext):
             for value in keyboars.OwnerDriverOffers_columns.values():
                 columns_keyboard.append([KeyboardButton(text=value)])  
         elif table == "drivers":
-            for value in keyboars.drivers_columns.values():
-                columns_keyboard.append([KeyboardButton(text=value)])   
+            driver = await get_by_id(message.from_user.id, "drivers")
+            if driver['driver_type'] == 'Company driver':
+                for key, value in keyboars.drivers_columns.items():
+                    columns_keyboard.append([KeyboardButton(text=value)])
+            else:
+                for key, value in keyboars.drivers_columns.items():
+                    if key not in ["miles_dialy", "miles_weekly", "work_days_type", "work_days", "home_days", "nigth_or_day_time_PU"]:
+                        columns_keyboard.append([KeyboardButton(text=value)]) 
+        
         elif table == "cdls":
             for value in keyboars.cdls_columns.values():
                 columns_keyboard.append([KeyboardButton(text=value)])    
@@ -194,8 +212,12 @@ async def ask_Column(message: types.Message, state: FSMContext):
             for value in keyboars.MedicalCards_columns.values():
                 columns_keyboard.append([KeyboardButton(text=value)])    
 
-        columns_keyboard.append([KeyboardButton(text="Cancel⬅️")])
+        if table == "drivers":
+            driver = await get_by_id(message.from_user.id, "drivers")
+            if driver['driver_type'] != 'Company driver':
+                columns_keyboard.remove
 
+        columns_keyboard.append([KeyboardButton(text="Cancel⬅️")])
         await state.set_state(EditState.Column)
         await message.answer("Select column for update", reply_markup=ReplyKeyboardMarkup(resize_keyboard=True, keyboard=columns_keyboard))
     except:
@@ -275,4 +297,5 @@ async def checkAndUpdateColumn(message: types.Message, state: FSMContext):
         await message.answer(f"Saved!", reply_markup=await GetMainMenu(user_id))
     except:
         await message.answer("Something wrong, Please try again.")
+
 

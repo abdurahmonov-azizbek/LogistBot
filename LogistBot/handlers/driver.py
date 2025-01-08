@@ -410,3 +410,5 @@ async def finish_note(message: types.Message, state: FSMContext):
     except Exception as ex:
         print(f"Error: {ex}")
         await message.answer("Something went wrong, /start - try again", reply_markup=types.ReplyKeyboardRemove())
+
+

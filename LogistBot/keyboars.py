@@ -16,6 +16,7 @@ carrier_main_menu = ReplyKeyboardMarkup(
         [KeyboardButton(text="Search Drivers🔍"), KeyboardButton(text="Account")],
         [KeyboardButton(text="Add Informationℹ️"), KeyboardButton(text="Settings⚙️")],
         [KeyboardButton(text="Delete Account❌"), KeyboardButton(text="Edit✏️")],
+        [KeyboardButton(text="Support🔧")]
     ],
 )
 
@@ -41,6 +42,7 @@ driver_info_menu = ReplyKeyboardMarkup(
         [KeyboardButton(text="CDL")],
         [KeyboardButton(text="Medical Card")],
         [KeyboardButton(text="Note")],
+        [KeyboardButton(text="CDL (image)")],
         [KeyboardButton(text="◀️Back to Main Menu")],
     ],
 )
@@ -87,6 +89,7 @@ driver_main_menu = ReplyKeyboardMarkup(
         [KeyboardButton(text="Search Companies🔎"), KeyboardButton(text="Account")],
         [KeyboardButton(text="Add Informationℹ️"), KeyboardButton(text="Status⚙️")],
         [KeyboardButton(text="Delete Account❌"), KeyboardButton(text="Edit✏️")],
+        [KeyboardButton(text="Support🔧")]
     ],
 )
 
@@ -275,14 +278,12 @@ companies_columns = {
 }
 
 CompanyDriverOffers_columns = {
-    "driver_salary_for_solo_type": "Driver salary for solo ($)",
-    "driver_salary_for_solo": "Driver salary for solo (%)",
-    "driver_salary_for_team_type": "Driver salary for team ($)",
-    "driver_salary_for_team": "Driver salary for team (%)",
+    "driver_salary_for_solo_usd": "Driver salary for solo ($)",
+    "driver_salary_for_solo_percentage": "Driver salary for solo (%)",
+    "driver_salary_for_team_usd": "Driver salary for team ($)",
     "escrow_per_week": "Escrow per week",
     "escrow_total": "Escrow total",
     "layover": "Layover",
-    "detension_for_each_extra_stop": "Detension for each extra stop",
     "avaiable_truck_numbers": "Avaiable truck numbers",
     "avaiable_trucks_make": "Avaiable trucks make",
     "truck_speed": "Truck speed",
@@ -293,18 +294,14 @@ SpecialLoads_columns = {
     "amazon": "Amazon",
     "po_loads": "PO Loads",
     "dry_van": "Dry Van",
-    "broker_loads": "Broker loads",
     "line_loads": "Line loads",
 }
 
 LeaseDriverOffers_columns = {
-    "truck_rental_fee_type": "Truck rental fee ($)",
     "truck_rental_fee": "Truck rental fee (%)",
     "truck_miles": "Truck Miles",
     "dispatch_service": "Dispatch service",
-    "safety_service_type": "Safety service ($)",
-    "safety_service": "Safety service (%)",
-    "office_admin_type": "Office admin ($)",
+    "office_admin_usd": "Office admin ($)",
     "ifta": "IFTA",
     "insurance_type": "Insurance type",
     "insurance": "Insurance"
@@ -312,11 +309,8 @@ LeaseDriverOffers_columns = {
 
 OwnerDriverOffers_columns = {
     "dispatch_service": "Dispatch service",
-    "safety_service_type": "Safety service ($)",
-    "safety_service": "Safety service (%)",
-    "office_admin_type": "Office admin ($)",
+    "office_admin_usd": "Office admin ($)",
     "ifta": "IFTA",
-    "insurance_type": "Insurance type",
     "insurance": "Insurance"
 }
 

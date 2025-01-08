@@ -1,0 +1,157 @@
+Will be deleted
+
+———————————————————————————-
+
+   Driver Load offer details:
+
+[4/5] Broker Leads ?  - Remove 
+
+———————————————————————————-
+
+   Offer for company drivers:
+
+[4/12] Enter driver salary for team (%): - remove
+[8/12] Detension for each extra stop ? - remove
+
+———————————————————————————-
+
+   Offers for owner operators:
+
+[2/7] Savety service ($): - remove
+[3/7] Safety service (%): - remove 
+[6/7] Select insurance type (per week/month) - remove
+
+———————————————————————————-
+
+   Offer for lease driver:
+
+[1/10] Select truck rental fee type: - remove
+[3/7] Savety service ($): - remove
+[3/7] Safety service (%): - remove
+
+
+(DONE)
+
+----------------------------------------------------
+
+
+
+Need to Edit name
+
+————————————————————————————
+Carrier: 
+[1/7] Enter the name of your company: - Enter company name !
+[4/7] Enter your address (e.g., Address, City, State, ZIP Code): - Enter company mail address ? (Example: Address, City, State, ZIP) 
+[5/7] Enter the total number of company trucks - How many company trucks you have (number of trucks) ?
+[6/7] Enter your company email: - Enter company contact email address!
+[7/7] Enter your company contact number: - Enter company contact number!
+————————————————————————————
+
+Driver Load offer details:  - Load Details 
+
+[1/5] Are there any Amazon loads currently available for drivers? - Are you hauling amazon loads ? 
+[2/5] Are there any Power-only (PO) loads currently available for drivers? - Power only (PO) ? 
+[5/5] Are there any current Line loads available for drivers? - Do you have dedicated lanes ?  
+
+————————————————————————————
+Offer for company drivers - Info for Company driver
+
+[1/12] Enter driver salary for solo ($) ?  - Solo driver pay $ ? (Example: 0.60 or 0.70) 
+[3/12] Enter driver salary for team ($) ? - TEAM drivers pay  $ ? (Example: 0.75 or 0.90) 
+[7/12] Enter layover? - Layover fee $ (daily) ?
+[9/12] Available truck numbers ? - Available trucks ? (Example: 11) 
+[10/12] Available Trucks make ? - Enter year average of available trucks ? (Example: 2020 - 2024)
+[11/12] Truck speed ?  - Speed governor ? (Example: 65Mph or 75Mph)
+[12/12] Minimum experience requirement ? - Min. Driver experience requirement ? (3 month or 2 years)
+———————————————————————————-
+Offers for owner operators   - Info for owner drivers
+
+[1/7] Dispatch service: - Company fees (weekly) ?
+[4/7] Office admin ($): - Admin fee (weekly) ?
+[5/7] IFTA: - IFTA (weekly) ?
+[7/7] Enter insurance: - Insurance fee (weekly) ?
+—————————————————————-
+
+Offer for lease driver  - Info for Lease owner drivers
+
+[2/10] Enter truck rental fee: - Weekly truck rent fee $ ?
+[3/10] Enter truck miles ($1.23 per mile): - Per mile fee ? (Example: 0.13 per miles or 0.15 per miles)  
+[4/10] Enter dispatch service: - Company fees (weekly) ?
+            Office admin ($): - Admin fee (weekly) ?
+            IFTA: - IFTA (weekly) ?
+            Select insurance type (per week/month) - Insurance (weekly) ?
+
+(DONE)
+
+---------------------------------------------------------
+            
+            
+            
+            
+            + All Driver page da 
+
+CDL va Medcard ga picture ni yoki file ni uploadlik qilish funksiyasi
+
+CDL: 2 talik upload qilinadigan, 
+- Front side  
+- Back side 
+
+MedCard: 1 talik upload qilinadigan, chunki document ni orqasi muhum emas faqat bitta tarafi muhum
+
+- Upload file  
+
+
+
+(4 MB gacha limit)
+
+
+
+
+
+----------------------------
+
++ 
+Bir martta CDL/Medical Card yuklagandan keyin, Add informationda 
+Change CDL
+Change MedicalCard
+buttonlari ochilishi kerak va o'sha yerdan yangi rasmlarni upload qilishi kerak.
+
+
+
+
+-----------------------------------------------
+etgande Edit qvotganda Company Driverlardan boshqa driverlarga 
+Miles Dialy, Miles weekly lar korinmasligi kerak edi
+(DONE)
+---------------------------------------
+
+Company/Driver uchun Support button. 
+(DONE)
+
+----------------------------------------------
+
+
+Company Driver qidirvotganda SendRequest buttonlari orasiga  Send for CDL, send for MEdiclCard buttonlari ham chiqishi kerak
+har biriga bossa Driver uchun alohida request keladigan bo'ladi, maqsad : driver accept qilgandan keyin CDL va MedicalCardlarini tashlab beradi
+
+--------------------------------
+
+
+Payment (ruchnoy)
+1. Driver, Company ga ham balance qo'shiladi.
+2. Har kuni balancedan foydalangani uchun pul ayriladi. va agar balance 0 ga tushsa bot ishlamaydi.
+3. Company, Driver uchun ham referal tizimini qo'shish. Taklif qilgan foydalanuvchi botdan royhatdan o'tsa taklif qilgan odam balansiga pul qo'shilishi kerak (Company taklif qilgani uchun
+alohida narx, Driver taklif qilgani uchun alohida narx)
+4. Admin panelda:
+  1. Company balansini to'ldirish
+  2. Driver balansini to'ldirish
+  3. Barcha company lar hisobiga pul qo'shish
+  4. Barcha driver lar hisobiga pul qo'shish
+  5. Driver uchun bot narxini belgilash (1 kunlik uchun kiritadi)
+  6. Company uchun bot narxini belgilash (kunlik narx kiritiladi)
+  7. Referal havola uchun narx(botga COmpany taklif qilsa)
+  8. Referal havola uchun narx(botga Driver taklif qilsa)
+
+
+1. foydalanuvchi balansi tugaganda habar boradigan qilish kerak hisobni to'ldiring yoki referal orqali taklif qiling!
+2. /start bosgandagi textni o'zgartirish kerak
