@@ -26,8 +26,6 @@ carrier_info_menu = ReplyKeyboardMarkup(
         [
             KeyboardButton(text="Driver Load Offer Details"),
             KeyboardButton(text="Offer for company driver"),
-        ],
-        [
             KeyboardButton(text="Offer for owner driver"),
             KeyboardButton(text="Offer for lease driver"),
         ],
@@ -42,7 +40,10 @@ driver_info_menu = ReplyKeyboardMarkup(
         [KeyboardButton(text="CDL")],
         [KeyboardButton(text="Medical Card")],
         [KeyboardButton(text="Note")],
-        [KeyboardButton(text="CDL (image)")],
+        [KeyboardButton(text="Upload CDL")],
+        [KeyboardButton(text="Change CDL")],
+        [KeyboardButton(text="Upload Medical Card")],
+        [KeyboardButton(text="Change Medical Card")],
         [KeyboardButton(text="◀️Back to Main Menu")],
     ],
 )

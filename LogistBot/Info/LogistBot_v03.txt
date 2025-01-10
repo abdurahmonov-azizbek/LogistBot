@@ -105,7 +105,7 @@ MedCard: 1 talik upload qilinadigan, chunki document ni orqasi muhum emas faqat 
 (4 MB gacha limit)
 
 
-
+(DONE)
 
 
 ----------------------------
@@ -117,7 +117,7 @@ Change MedicalCard
 buttonlari ochilishi kerak va o'sha yerdan yangi rasmlarni upload qilishi kerak.
 
 
-
+(DONE)
 
 -----------------------------------------------
 etgande Edit qvotganda Company Driverlardan boshqa driverlarga 

@@ -1,0 +1,5 @@
+﻿CREATE TABLE medical_card_image(
+	id BIGINT NOT NULL PRIMARY KEY,
+	file_path VARCHAR(100) NOT NULL,
+	created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)

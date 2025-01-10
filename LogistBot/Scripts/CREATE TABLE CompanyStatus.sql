@@ -4,4 +4,4 @@ CREATE TABLE IF NOT EXISTS CompanyStatus(
     company_driver boolean default true,
     owner_driver boolean default true,
     lease_driver boolean default true
-);
+)

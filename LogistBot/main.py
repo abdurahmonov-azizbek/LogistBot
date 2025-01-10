@@ -14,10 +14,11 @@ from db import *
 import config
 from handlers.functions import *
 from aiogram.fsm.state import StatesGroup, State
+import uuid
+from bot_instance import bot, dp
 
-
-bot = Bot(token=config.BOT_TOKEN)
-dp = Dispatcher()
+# bot = Bot(token=config.BOT_TOKEN)
+# dp = Dispatcher()
 dp.include_router(base_router)
 dp.include_router(admin_router)
 dp.include_router(carrier_router)
@@ -106,44 +107,6 @@ async def sendtoAdmin(message: Message, state: FSMContext):
         print(ex)
         await message.answer("Something wrong, Please try again.")
 
-# CDL image upload functions
-MAX_FILE_SIZE = 4 * 1024 * 1024  # 4 MB
-
-class CDLStates(StatesGroup):
-    FirstImage = State()
-    SecondImage = State()
-
-@dp.message(F.text == "CDL (image)")
-async def startCdlUpload(message: Message, state: FSMContext):
-    try:
-        user_id = message.from_user.id
-        driver = await get_by_id(user_id, "drivers")
-        if not driver:
-            return
-        await create_cdl_folder(user_id)
-        await state.set_state(CDLStates.FirstImage)
-        await message.answer(f"Send me the front size of your cdl image")
-
-    except Exception as ex:
-        print(ex)
-        await message.answer("Something wrong, Please try again.")
-
-@dp.message(CDLStates.FirstImage, F.photo | F.document)
-async def handle_first_image(message: Message, state: FSMContext):
-    file_id = None
-
-    if message.photo:
-        file_id = message.photo[-1].file_id
-    elif message.document and message.document.mime_type.startswith("image"):
-        if message.document.file_size > MAX_FILE_SIZE:
-            await message.answer("The file size is 4 MB and should be used.")
-            return
-        file_id = message.document.file_id
-    else:
-        await message.answer("Please send only image!")
-        return
-    
-    print(file_id)
 
 async def main():
     print("Starting....")

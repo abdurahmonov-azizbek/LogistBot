@@ -50,7 +50,7 @@ async def get_driver_full_info(driver: dict, user_id) -> str:
     if medical_card:
         info.append(f"\nℹ️Medical card\nNational Registry: {medical_card['national_registry']}\nExpiration Date: {medical_card['expiration_date']}\nDate of Certificate {medical_card['date_certificate_signed']}")
 
-    return driver_information
+    return info
 
 
 async def GetMainMenu(user_id):
@@ -116,8 +116,14 @@ async def deleteAllData(user_id):
         
 async def create_cdl_folder(user_id):
     try:
-        path = f"/Images/cdl/{user_id}"
-        if not os.path.exists(path=path):
-            os.makedirs(path)
+        path = os.path.join(os.curdir, "images", "cdl", str(user_id))
+        os.makedirs(path, exist_ok=True)
+    except Exception as ex:
+        print(ex)
+
+async def create_medical_card_folder(user_id):
+    try:
+        path = os.path.join(os.curdir, "images", "medicalcard", str(user_id))
+        os.makedirs(path, exist_ok=True)
     except Exception as ex:
         print(ex)

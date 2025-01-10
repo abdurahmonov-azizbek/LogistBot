@@ -1,14 +1,14 @@
 from aiogram import Router, types, F
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
+from aiogram.types import FSInputFile, InputMediaPhoto, KeyboardButton, ReplyKeyboardMarkup
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.filters.callback_data import CallbackData
 from db import *
 from .functions import *
 import keyboars
 import asyncio
-from config import ADMINS
+from bot_instance import bot
 
 router = Router()
 
@@ -25,7 +25,6 @@ async def show_account(message: types.Message):
             for info in company_informations:
                 await message.answer(info)
                 await asyncio.sleep(1)
-
             return
         
         driver = await get_by_id(user_id, "drivers")
@@ -34,9 +33,25 @@ async def show_account(message: types.Message):
             for driver_info in driver_information:
                 await message.answer(driver_info)
                 await asyncio.sleep(1)
-                
+            
+            cdl_image = await get_latest_by_date(user_id, 'cdl_image', "created_date")
+            if cdl_image:
+                front_side = FSInputFile(cdl_image['front_side'])
+                back_side = FSInputFile(cdl_image['back_side'])
+                media = [
+                    InputMediaPhoto(media=front_side),
+                    InputMediaPhoto(media=back_side, caption="CDL image"),
+                ]
+                await bot.send_media_group(chat_id=message.chat.id, media=media)
+
+            medical_card_image = await get_by_id(user_id, "medical_card_image")
+            if medical_card_image:
+                image = FSInputFile(medical_card_image['file_path'])
+                await bot.send_photo(user_id, image, caption="Medical card")
+
             return
-    except:
+    except Exception as ex:
+        print(ex)
         await message.answer("Something went wrong, sorry.")
 #endregion
 
@@ -77,7 +92,7 @@ async def show_options(message: types.Message):
     driver = await get_by_id(user_id, "drivers")
     if driver:
         driver_info_menu = []
-        if driver['driver_type'] == "Company driver" and (driver['miles_dialy'] == None and driver['nigth_or_day_time_PU'] == None):
+        if driver['driver_type'] == "Company driver" and (driver['miles_dialy'] == None):
             driver_info_menu.append([KeyboardButton(text="More info (only for Company drivers)")])
 
         cdl = await get_by_id(user_id, "cdls")
@@ -97,7 +112,18 @@ async def show_options(message: types.Message):
             return 
         
 
-        driver_info_menu.append([KeyboardButton(text="CDL (image)")])
+        driver_info_menu.append([KeyboardButton(text="Upload CDL")])
+
+        last_cdl_image = await get_latest_by_date(message.from_user.id, "cdl_image", "created_date")
+        if last_cdl_image:
+            driver_info_menu.append([KeyboardButton(text="Change CDL")])
+
+        medical_card_image = await get_by_id(user_id, "medical_card_image")
+        if not medical_card_image:
+            driver_info_menu.append([KeyboardButton(text="Upload Medical Card")])
+        else:
+            driver_info_menu.append([KeyboardButton(text="Change Medical Card")])
+
 
         driver_info_menu.append([KeyboardButton(text="◀️Back to Main Menu")])
 
@@ -297,5 +323,4 @@ async def checkAndUpdateColumn(message: types.Message, state: FSMContext):
         await message.answer(f"Saved!", reply_markup=await GetMainMenu(user_id))
     except:
         await message.answer("Something wrong, Please try again.")
-
 

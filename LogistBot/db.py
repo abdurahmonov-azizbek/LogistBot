@@ -228,22 +228,59 @@ async def get_by_id(id: int, table_name: str):
     finally:
         await conn.close()
 
+async def get_latest_by_date(user_id, table_name: str, date_column: str = "created_at"):
+    """
+    Sana bo'yicha eng oxirgi yaratilgan obyektni qaytaradi.
 
-async def delete_by_id(id: int, table_name: str) -> bool:
+    :param table_name: Jadval nomi
+    :param date_column: Sana ustuni nomi (standart: "created_at")
+    :return: Eng oxirgi obyekt yoki None
+    """
     try:
         conn = await get_db_connection()
-        query = f"DELETE FROM {table_name} WHERE id = $1"
-        row = await conn.execute(query, id)
+        query = f"""
+        SELECT * 
+        FROM {table_name}
+        WHERE id = $1
+        ORDER BY {date_column} DESC
+        LIMIT 1
+        """
+        row = await conn.fetchrow(query, user_id)
+
         if row:
+            return dict(row)
+        else:
+            return None
+        
+    except Exception as e:
+        print(f"[*] Error fetching latest record: {e}")
+    finally:
+        await conn.close()
+
+
+async def delete_by_id(id: int, table_name: str, id_column: str = "id") -> bool:
+    """
+    Ma'lum id bo'yicha satrni o'chirish.
+    :param id: O'chirilishi kerak bo'lgan ID (BIGINT diapazonida bo'lishi kerak).
+    :param table_name: Jadval nomi.
+    :param id_column: ID ustuni nomi.
+    :return: O'chirish muvaffaqiyatli bo'lsa True, aks holda False.
+    """
+    try:
+        conn = await get_db_connection()
+        query = f"DELETE FROM {table_name} WHERE {id_column} = $1"
+        row = await conn.execute(query, id)
+        # `conn.execute` string qaytaradi, uni tekshirish kerak
+        if row and "DELETE" in row:
             return True
         else:
             return False
     except Exception as e:
-        print(f"[!] Error deleteing row: {e}")
+        print(f"[!] Error deleting row: {e}")
     finally:
         await conn.close()
-        
-        
+
+         
 async def save_company_driver_more_info(data: dict):
     conn = await get_db_connection()
     
@@ -416,3 +453,25 @@ async def search_driver(key):
     finally:
         if conn:
             await conn.close()
+
+async def save_cdl_image(data: dict):
+    try:
+        conn = await get_db_connection()
+        query = "INSERT INTO cdl_image (id, front_side, back_side) VALUES ($1, $2, $3)"
+        await conn.execute(
+            query,
+            data['id'],
+            data['front_side'],
+            data['back_side']
+        )
+        
+    except Exception as ex:
+        print(f"[!] Error saving cdl images: {ex}")
+
+async def save_medical_card_image(data: dict):
+    try:
+        conn = await get_db_connection()
+        query = "INSERT INTO medical_card_image (id, file_path) VALUES ($1, $2)"
+        await conn.execute(query, data['id'], data['file_path'])
+    except Exception as e:
+        print(f"[!] Error saving medical card images: {e}")

@@ -82,7 +82,13 @@ async def ask_contact(message: types.Message, state: FSMContext):
 # Kontakt va ma'lumotlarni saqlash
 @router.message(CarrierRegistration.CompanyContact)
 async def finish_registration(message: types.Message, state: FSMContext):
-    await state.update_data(company_contact=message.text, tg_user_id=message.from_user.id)
+    # formatting us phone number
+    phone_number = message.text
+    phone_number = phone_number.replace(" ", "").replace("\t", "").replace("\n", "")
+    if not phone_number.startswith("+1"):
+        phone_number = "+1" + phone_number.lstrip("1")
+
+    await state.update_data(company_contact=phone_number)
     data = await state.get_data()
     data.update({"id": message.from_user.id})
     await save_carrier_data(data)  # Ma'lumotlarni saqlash

@@ -1,8 +1,14 @@
-from aiogram import Router, types, F
+﻿from aiogram import Router, types, F
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import StatesGroup, State
+from aiogram.fsm.state import StatesGroup, State, StatesGroupMeta
+from aiogram.types import file, reply_keyboard_markup
 from db import *
 import keyboars
+from bot_instance import bot, dp
+import os
+from aiogram.types import *
+from .functions import *
+import uuid
 
 router = Router()
 
@@ -412,3 +418,310 @@ async def finish_note(message: types.Message, state: FSMContext):
         await message.answer("Something went wrong, /start - try again", reply_markup=types.ReplyKeyboardRemove())
 
 
+#region CDL image upload
+# CDL image upload functions
+MAX_FILE_SIZE = 4 * 1024 * 1024  # 4 MB
+
+class CDLStates(StatesGroup):
+    FirstImage = State()
+    SecondImage = State()
+
+@dp.message(F.text == "Upload CDL")
+async def startCdlUpload(message: Message, state: FSMContext):
+    try:
+        user_id = message.from_user.id
+        driver = await get_by_id(user_id, "drivers")
+        if not driver:
+            return
+        await create_cdl_folder(user_id)
+        await state.set_state(CDLStates.FirstImage)
+        await message.answer(f"Send me the front side of your cdl image", reply_markup=keyboars.cancel)
+
+    except Exception as ex:
+        print(ex)
+        await message.answer("Something wrong, Please try again.")
+
+@dp.message(CDLStates.FirstImage, F.photo | F.document)
+async def handle_first_image(message: Message, state: FSMContext):
+    try:
+        file_id = None
+
+        if message.photo:
+            file_id = message.photo[-1].file_id
+        elif message.document and message.document.mime_type.startswith("image"):
+            if message.document.file_size > MAX_FILE_SIZE:
+                await message.answer("The file size is 4 MB and should be used.")
+                return
+            file_id = message.document.file_id
+        else:
+            await message.answer("Please send only image!")
+            return
+    
+        await state.update_data(first=file_id)
+        await state.set_state(CDLStates.SecondImage)
+        await message.answer("Now, send me the Back side of your cdl")
+    except:
+        await message.answer("Something went wrong, /start - try again", reply_markup=types.ReplyKeyboardRemove())
+    
+@dp.message(CDLStates.SecondImage, F.photo | F.document)
+async def handle_second_image(message: Message, state: FSMContext):
+    try:
+        file_id = None
+
+        if message.photo:
+            file_id = message.photo[-1].file_id
+        elif message.document and message.document.mime_type.startswith("image"):
+            if message.document.file_size > MAX_FILE_SIZE:
+                await message.answer("The file size is 4 MB and should be used.")
+                return
+            file_id = message.document.file_id
+        else:
+            await message.answer("Please send only image!")
+            return
+    
+        await message.answer("Uploading....")
+        await state.update_data(second=file_id)
+        data = await state.get_data()
+        await state.clear()
+
+        firstFile = await bot.get_file(data['first'])
+        secondFile = await bot.get_file(data['second'])
+        first_file_name = str(uuid.uuid4()) + ".jpg"
+        second_file_name = str(uuid.uuid4()) + ".jpg"
+        cdl_path = os.path.join(os.curdir, "images", "cdl", str(message.from_user.id))
+        await bot.download_file(firstFile.file_path, os.path.join(cdl_path, first_file_name))
+        await bot.download_file(secondFile.file_path, os.path.join(cdl_path, second_file_name))
+        save_information = {
+            'id': message.from_user.id,
+            'front_side': os.path.join(cdl_path, first_file_name),
+            'back_side': os.path.join(cdl_path, second_file_name)
+        }
+        await save_cdl_image(save_information)
+        await message.answer("Saved, Thank you!", reply_markup=keyboars.driver_main_menu)
+    except:
+        await message.answer("Something went wrong, /start - try again", reply_markup=types.ReplyKeyboardRemove())
+#endregion
+
+#region Change last uploaded cdl images
+class ChangeCDLStates(StatesGroup):
+    FrontSide = State()
+    BackSide = State()
+
+@router.message(F.text == "Change CDL")
+async def changeLastCdl(message: types.Message, state: FSMContext):
+    try:
+        user_id = message.from_user.id
+        last_cdl = await get_latest_by_date(user_id, "cdl_image", "created_date")
+        if not last_cdl:
+            await message.answer("You need to upload CDL image first, before change it!")
+            return
+
+        front_side = FSInputFile(last_cdl['front_side'])
+        back_side = FSInputFile(last_cdl['back_side'])
+        media = [
+            InputMediaPhoto(media=front_side),
+            InputMediaPhoto(media=back_side, caption="Your current CDL image"),
+        ]
+        await bot.send_media_group(user_id, media=media)
+        await message.answer("If you want to change it, please send the front side of your new cdl image", reply_markup=keyboars.cancel)
+        await state.set_state(ChangeCDLStates.FrontSide)
+    except:
+        await message.answer("Something went wrong, /start - try again", reply_markup=types.ReplyKeyboardRemove())
+
+@router.message(ChangeCDLStates.FrontSide, F.photo | F.document)
+async def change_frontside(message: types.Message, state: FSMContext):
+    try:
+        file_id = None
+
+        if message.photo:
+            file_id = message.photo[-1].file_id
+        elif message.document and message.document.mime_type.startswith("image"):
+            if message.document.file_size > MAX_FILE_SIZE:
+                await message.answer("The file size is 4 MB and should be used.")
+                return
+            file_id = message.document.file_id
+        else:
+            await message.answer("Please send only image!")
+            return
+
+        await state.update_data(first=file_id)
+        await message.answer("Ok. now send back side")
+        await state.set_state(ChangeCDLStates.BackSide)
+    except:
+        await message.answer("Something went wrong, /start - try again", reply_markup=types.ReplyKeyboardRemove())
+
+@router.message(ChangeCDLStates.BackSide, F.photo | F.document)
+async def change_frontside(message: types.Message, state: FSMContext):
+    try:
+        file_id = None
+
+        if message.photo:
+            file_id = message.photo[-1].file_id
+        elif message.document and message.document.mime_type.startswith("image"):
+            if message.document.file_size > MAX_FILE_SIZE:
+                await message.answer("The file size is 4 MB and should be used.")
+                return
+            file_id = message.document.file_id
+        else:
+            await message.answer("Please send only image!")
+            return
+
+        await state.update_data(second=file_id)
+        data = await state.get_data()
+        await state.clear()
+        await message.answer("Changing....")
+
+        user_id = message.from_user.id
+        last_cdl = await get_latest_by_date(user_id, "cdl_image", "created_date")
+        if not last_cdl:
+            return
+        
+        delete_result = await delete_by_id(last_cdl['unique_id'], "cdl_image", "unique_id")
+        print(delete_result)
+
+        firstFile = await bot.get_file(data['first'])
+        secondFile = await bot.get_file(data['second'])
+        first_file_name = str(uuid.uuid4()) + ".jpg"
+        second_file_name = str(uuid.uuid4()) + ".jpg"
+        cdl_path = os.path.join(os.curdir, "images", "cdl", str(user_id))
+        await bot.download_file(firstFile.file_path, os.path.join(cdl_path, first_file_name))
+        await bot.download_file(secondFile.file_path, os.path.join(cdl_path, second_file_name))
+        save_information = {
+            'id': user_id,
+            'front_side': os.path.join(cdl_path, first_file_name),
+            'back_side': os.path.join(cdl_path, second_file_name)
+        }
+        await save_cdl_image(save_information)
+
+        os.remove(last_cdl['front_side'])
+        os.remove(last_cdl['back_side'])
+
+        await message.answer("Done✅", reply_markup=keyboars.driver_main_menu)
+    except:
+        await message.answer("Something went wrong, /start - try again", reply_markup=types.ReplyKeyboardRemove())
+
+#endregion
+
+#startregion Upload Medical Card image
+class MedicalCardImageStates(StatesGroup):
+    Image = State()
+
+@router.message(F.text == "Upload Medical Card")
+async def start_upload_medcard(message: types.Message, state: FSMContext):
+    try:
+        user_id = message.from_user.id
+        old_medical_card = await get_by_id(user_id, "medical_card_image")
+        if old_medical_card:
+            await message.answer("You already upload medical card!")
+            return
+        
+        await create_medical_card_folder(user_id)
+        await state.set_state(MedicalCardImageStates.Image)
+        await message.answer("Ok, send medical card image", reply_markup=keyboars.cancel)
+
+    except:
+        await message.answer("Something went wrong, /start - try again", reply_markup=types.ReplyKeyboardRemove())
+
+@router.message(MedicalCardImageStates.Image, F.photo | F.document)
+async def save_medicalcard(message: types.Message, state: FSMContext):
+    try:
+        file_id = None
+
+        if message.photo:
+            file_id = message.photo[-1].file_id
+        elif message.document and message.document.mime_type.startswith("image"):
+            if message.document.file_size > MAX_FILE_SIZE:
+                await message.answer("The file size is 4 MB and should be used.")
+                return
+            file_id = message.document.file_id
+        else:
+            await message.answer("Please send only image!")
+            return
+
+        await state.update_data(image=file_id)
+        data = await state.get_data()
+        await state.clear()
+
+        await message.answer("Uploading...")
+        user_id = message.from_user.id
+        image = await bot.get_file(data['image'])
+        medical_card_path = os.path.join(os.curdir, "images", "medicalcard", str(user_id))
+        image_name = str(uuid.uuid4()) + ".jpg"
+        await bot.download_file(image.file_path, os.path.join(medical_card_path, image_name))
+        save_info = {
+            'id': user_id,
+            'file_path': os.path.join(medical_card_path, image_name)
+        }
+
+        await save_medical_card_image(save_info)
+        await message.answer("Saved✅", reply_markup=keyboars.driver_main_menu)
+    except Exception as e:
+        print(e)
+        await message.answer("Something went wrong, /start - try again", reply_markup=types.ReplyKeyboardRemove())
+
+#endregion
+#region Change Medical card
+class ChangeMedicalCardStates(StatesGroup):
+    Image = State()
+
+@router.message(F.text == "Change Medical Card")
+async def start_change_medcard_image(message: types.Message, state: FSMContext):
+    try:
+        user_id = message.from_user.id
+        old_medcard = await get_by_id(user_id, "medical_card_image")
+        if not old_medcard:
+            await message.answer("You must be uploaded medical card before change it!")
+            return 
+
+        image = FSInputFile(old_medcard['file_path'])
+        await state.set_state(ChangeMedicalCardStates.Image)
+        await bot.send_photo(user_id, photo=image, caption="Your current medical card image!")
+        await message.answer("If you want to change it, send new medical card image", reply_markup=keyboars.cancel)
+        await state.set_state(ChangeMedicalCardStates.Image)
+
+    except Exception as e:
+        print(e)
+        await message.answer("Something went wrong, /start - try again", reply_markup=types.ReplyKeyboardRemove())
+
+@router.message(ChangeMedicalCardStates.Image, F.photo | F.document)
+async def changeMedCardImage(message: types.Message, state: FSMContext):
+    try:
+        file_id = None
+
+        if message.photo:
+            file_id = message.photo[-1].file_id
+        elif message.document and message.document.mime_type.startswith("image"):
+            if message.document.file_size > MAX_FILE_SIZE:
+                await message.answer("The file size is 4 MB and should be used.")
+                return
+            file_id = message.document.file_id
+        else:
+            await message.answer("Please send only image!")
+            return
+
+        await state.update_data(image=file_id)
+        data = await state.get_data()
+        await state.clear()
+        await message.answer("Changing...")
+        user_id = message.from_user.id
+        
+        old_medcard = await get_by_id(user_id, "medical_card_image")
+        if not old_medcard:
+            os.remove(old_medcard['file_path'])
+        await delete_by_id(user_id, "medical_card_image")
+        image = await bot.get_file(data['image'])
+        medical_card_path = os.path.join(os.curdir, "images", "medicalcard", str(user_id))
+        image_name = str(uuid.uuid4()) + ".jpg"
+        image_path = os.path.join(medical_card_path, image_name)
+        await bot.download_file(image.file_path, image_path)
+        save_info = {
+            'id': user_id,
+            'file_path': image_path
+        }
+        await save_medical_card_image(save_info)
+        
+        await message.answer("Done✅", reply_markup=keyboars.driver_main_menu)
+
+    except Exception as e:
+        print(e)
+        await message.answer("Something went wrong, /start - try again", reply_markup=types.ReplyKeyboardRemove())
