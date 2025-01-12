@@ -475,3 +475,56 @@ async def save_medical_card_image(data: dict):
         await conn.execute(query, data['id'], data['file_path'])
     except Exception as e:
         print(f"[!] Error saving medical card images: {e}")
+
+
+async def save_company_balance(id, balance):
+    try:
+        conn = await get_db_connection()
+        query = "INSERT INTO CompanyBalance (id, balance) VALUES ($1, $2)"
+        await conn.execute(query, id, balance)
+    except Exception as e:
+        print(f"[!] Error saving CompanyBalance: {e}")
+
+async def save_driver_balance(id, balance):
+    try:
+        conn = await get_db_connection()
+        query = "INSERT INTO DriverBalance (id, balance) VALUES ($1, $2)"
+        await conn.execute(query, id, balance)
+    except Exception as e:
+        print(f"[!] Error saving CompanyBalance: {e}")
+
+async def get_all(table_name):
+    conn = await get_db_connection()
+    query = f"SELECT * FROM {table_name}"
+    
+    try:
+        rows = await conn.fetch(query)  # barcha yozuvlarni olish
+        return [dict(row) for row in rows]  # natijani dict ko'rinishida qaytarish
+    except Exception as e:
+        print(f"[*] Error fetching all {table_name}: {e}")
+        return []
+    finally:
+        await conn.close()
+
+
+async def update_balance(table_name, id, new_balance):
+    conn = await get_db_connection()
+    try:
+        query = f"UPDATE {table_name} SET balance = $1 WHERE id = $2"
+        
+        await conn.execute(query, new_balance, id)
+    finally:
+        await conn.close()
+
+async def get_settings():
+    try:
+        conn = await get_db_connection()
+        query = f"SELECT * FROM settings LIMIT 1"
+        row = await conn.fetchrow(query)
+
+        if row:
+            return dict(row)
+        else:
+            raise Exception("Settings not found!")
+    except Exception as ex:
+        print(ex)

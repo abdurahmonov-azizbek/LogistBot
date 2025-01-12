@@ -9,6 +9,7 @@ import os
 from aiogram.types import *
 from .functions import *
 import uuid
+from handlers.base import checkBalance
 
 router = Router()
 
@@ -27,6 +28,7 @@ class DriverRegistration(StatesGroup):
 @router.message(F.text == "Driver")
 async def ask_driver_type_for_registration(message: types.Message, state: FSMContext):
     try:
+        
         await state.set_state(DriverRegistration.DriverType)
         await message.answer("[1/7] Choose driver type: ", reply_markup=keyboars.driver_types)
     except:
@@ -114,6 +116,7 @@ async def finish_driver_registration(message: types.Message, state: FSMContext):
         data.update({'id': message.from_user.id})
         await save_driver(data)
         await save_driver_status(message.from_user.id, True)
+        await save_driver_balance(message.from_user.id, 0)
         await state.clear()
         await message.answer("Amazing!, Thank you", reply_markup=keyboars.driver_main_menu)
     except:

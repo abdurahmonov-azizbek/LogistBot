@@ -10,6 +10,7 @@ import keyboars
 import asyncio
 from bot_instance import bot
 
+
 router = Router()
 
 #region Show Account
@@ -25,6 +26,9 @@ async def show_account(message: types.Message):
             for info in company_informations:
                 await message.answer(info)
                 await asyncio.sleep(1)
+            companyBalance = await get_by_id(user_id, "CompanyBalance")
+            if companyBalance:
+                await message.answer(f"💰BALANCE: {companyBalance['balance']}")
             return
         
         driver = await get_by_id(user_id, "drivers")
@@ -49,6 +53,9 @@ async def show_account(message: types.Message):
                 image = FSInputFile(medical_card_image['file_path'])
                 await bot.send_photo(user_id, image, caption="Medical card")
 
+            driverBalance = await get_by_id(user_id, "DriverBalance")
+            if driverBalance:
+                await message.answer(f"💰BALANCE: {driverBalance['balance']}")
             return
     except Exception as ex:
         print(ex)
@@ -324,3 +331,54 @@ async def checkAndUpdateColumn(message: types.Message, state: FSMContext):
     except:
         await message.answer("Something wrong, Please try again.")
 
+async def UpdateBalances():
+    try:
+        print("UpdateBalances starting..")
+        settings = await get_settings()
+        companyDailyPrice = settings['daily_price_for_company']
+        driverDailyPrice = settings['daily_price_for_driver']
+
+        companies_balance = await get_all("CompanyBalance")
+        drivers_balance = await get_all("DriverBalance")
+
+        for company_balance in companies_balance:
+            try:
+                company_id = company_balance['id']
+                old_balance = company_balance['balance']
+                new_balance = old_balance - companyDailyPrice
+                if old_balance < companyDailyPrice:
+                    await bot.send_message(company_id, "Your account doesn't have enough money to run the bot, top up your account or invite your friends", reply_markup=types.ReplyKeyboardRemove())
+                else:
+                    await update_balance("CompanyBalance", company_id, new_balance)
+            except Exception as e:
+                print(f"Error: {e}")
+                continue
+
+        for driver_balance in drivers_balance:
+            try:
+                driver_id = driver_balance['id']
+                current_balance = driver_balance['balance']
+                new_balance = current_balance - driverDailyPrice
+                if current_balance < driverDailyPrice:
+                    await bot.send_message(driver_id, "Your account doesn't have enough money to run the bot, top up your account or invite your friends", reply_markup=types.ReplyKeyboardRemove())
+                else:
+                    await update_balance("DriverBalance", driver_id, new_balance)
+            except Exception as e:
+                print(f"Error: {e}")
+                continue
+
+    except Exception as e:
+        print(f"[!!!] Error while updating balances: {e}")
+
+
+async def checkBalance(id) -> bool:
+    settings = await get_settings()
+    companyBalance = await get_by_id(id, "CompanyBalance")
+    if companyBalance:
+        return companyBalance['balance'] >= settings['daily_price_for_company']
+    
+    driverBalance = await get_by_id(id, "DriverBalance")
+    if driverBalance:
+        return driverBalance['balance'] >= settings['daily_price_for_driver']
+    
+    return False

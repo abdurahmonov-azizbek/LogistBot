@@ -92,6 +92,7 @@ async def finish_registration(message: types.Message, state: FSMContext):
     data = await state.get_data()
     data.update({"id": message.from_user.id})
     await save_carrier_data(data)  # Ma'lumotlarni saqlash
+    await save_company_balance(message.from_user.id, 100) # Yangi company uchun balance yaratish
     await save_default_driver_filter(message.from_user.id)
     await state.clear()
     await message.answer("Amazing! \nRegistration complete!", reply_markup=keyboars.carrier_main_menu)

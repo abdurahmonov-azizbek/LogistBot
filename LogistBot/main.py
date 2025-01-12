@@ -8,17 +8,18 @@ from handlers.driver import router as driver_router
 from handlers.logout import router as logout_router
 from handlers.search import router as search_roter
 from handlers.base import router as base_router
+from handlers.base import UpdateBalances
 from handlers.admin import router as admin_router
 from aiogram.types import *
 from db import *
 import config
 from handlers.functions import *
 from aiogram.fsm.state import StatesGroup, State
-import uuid
 from bot_instance import bot, dp
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
+from pytz import timezone
 
-# bot = Bot(token=config.BOT_TOKEN)
-# dp = Dispatcher()
 dp.include_router(base_router)
 dp.include_router(admin_router)
 dp.include_router(carrier_router)
@@ -109,8 +110,11 @@ async def sendtoAdmin(message: Message, state: FSMContext):
 
 
 async def main():
+    scheduler = AsyncIOScheduler(timezone=timezone("Asia/Tashkent"))
+    scheduler.add_job(UpdateBalances, CronTrigger(hour=23, minute=57, timezone=timezone("Asia/Tashkent")))
+    scheduler.start()
     print("Starting....")
-    await  dp.start_polling(bot)
+    await dp.start_polling(bot)
 
 
 if __name__ == "__main__":

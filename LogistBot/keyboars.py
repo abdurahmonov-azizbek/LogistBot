@@ -139,7 +139,8 @@ admin_menu = ReplyKeyboardMarkup(
         [KeyboardButton(text="Statistics📊")],
         [KeyboardButton(text="Add company➕"), KeyboardButton(text="Add driver➕")],
         [KeyboardButton(text="Search company🔎"), KeyboardButton(text="Search driver🔎")],
-        [KeyboardButton(text="Delete company❌"), KeyboardButton(text="Delete driver❌")]
+        [KeyboardButton(text="Delete company❌"), KeyboardButton(text="Delete driver❌")],
+        [KeyboardButton(text="Add money COMPANY"), KeyboardButton(text="Add money DRIVER")],
     ]
 )
 
@@ -172,22 +173,78 @@ class DriverCallback(CallbackData, prefix="driver"):
     requested_company_id: int
 
 
-def create_company_keyboard(driver_id, company_id):
+# def create_company_keyboard(driver_id, company_id):
+#     return InlineKeyboardMarkup(
+#         inline_keyboard=[
+#             [
+#                 InlineKeyboardButton(
+#                     text="Cancel ❌",
+#                     callback_data=DriverCallback(
+#                         action="cancel",
+#                         driver_id=driver_id,
+#                         requested_company_id=company_id,
+#                     ).pack(),
+#                 ),
+#                 InlineKeyboardButton(
+#                     text="Send Request 📤",
+#                     callback_data=DriverCallback(
+#                         action="send",
+#                         driver_id=driver_id,
+#                         requested_company_id=company_id,
+#                     ).pack(),
+#                 ),
+                
+#                 InlineKeyboardButton(
+#                     text="Next ➡️",
+#                     callback_data=DriverCallback(
+#                         action="next",
+#                         driver_id=driver_id,
+#                         requested_company_id=company_id,
+#                     ).pack(),
+#                 ),
+#             ]
+#         ]
+#     )
+
+#V2
+def create_company_keyboard(driver_id, company_id): 
     return InlineKeyboardMarkup(
         inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="Send Request 📤",
+                    callback_data=DriverCallback(
+                        action="send",
+                        driver_id=driver_id,
+                        requested_company_id=company_id,
+                    ).pack(),
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="Send Request for CDL📤",
+                    callback_data=DriverCallback(
+                        action="cdl",
+                        driver_id=driver_id,
+                        requested_company_id=company_id,
+                    ).pack(),
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="Send Request for Medical card📤",
+                    callback_data=DriverCallback(
+                        action="medicalcard",
+                        driver_id=driver_id,
+                        requested_company_id=company_id,
+                    ).pack(),
+                )
+            ],
             [
                 InlineKeyboardButton(
                     text="Cancel ❌",
                     callback_data=DriverCallback(
                         action="cancel",
-                        driver_id=driver_id,
-                        requested_company_id=company_id,
-                    ).pack(),
-                ),
-                InlineKeyboardButton(
-                    text="Send Request 📤",
-                    callback_data=DriverCallback(
-                        action="send",
                         driver_id=driver_id,
                         requested_company_id=company_id,
                     ).pack(),
@@ -199,7 +256,7 @@ def create_company_keyboard(driver_id, company_id):
                         driver_id=driver_id,
                         requested_company_id=company_id,
                     ).pack(),
-                ),
+                )
             ]
         ]
     )

@@ -133,7 +133,7 @@ Company/Driver uchun Support button.
 
 Company Driver qidirvotganda SendRequest buttonlari orasiga  Send for CDL, send for MEdiclCard buttonlari ham chiqishi kerak
 har biriga bossa Driver uchun alohida request keladigan bo'ladi, maqsad : driver accept qilgandan keyin CDL va MedicalCardlarini tashlab beradi
-
+(DONE)
 --------------------------------
 
 

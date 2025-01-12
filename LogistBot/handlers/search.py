@@ -1,10 +1,11 @@
 from aiogram import Router, types, F
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, FSInputFile
 from db import *
 from keyboars import *
 import random
+from handlers.base import checkBalance
 
 router = Router()
 
@@ -123,6 +124,10 @@ async def finish_DriverStatus(message: types.Message, state: FSMContext):
 @router.message(lambda message: message.text == "Search Companies🔎")
 async def driver_search(message: types.Message, state: FSMContext):
     try:
+        balanceResult = await checkBalance(message.from_user.id)
+        if not balanceResult:
+            await message.answer("Your account doesn't have enough money to run the bot, top up your account or invite your friends", reply_markup=types.ReplyKeyboardRemove())
+
         companies = await get_all_companies()
         if not companies:
             await message.answer("No companies found!")
@@ -163,6 +168,10 @@ async def handleCompanyCallback(callback_query: types.CallbackQuery, callback_da
 @router.message(lambda message: message.text == "Search Drivers🔍")
 async def search_drivers(message: types.Message, state: FSMContext):
     try:
+        balanceResult = await checkBalance(message.from_user.id)
+        if not balanceResult:
+            await message.answer("Your account doesn't have enough money to run the bot, top up your account or invite your friends", reply_markup=types.ReplyKeyboardRemove())
+
         drivers = await get_all_drivers()
         if not drivers:
             await message.answer("No drivers found!")
@@ -191,6 +200,8 @@ async def handle_driver_callback(callback_query: types.CallbackQuery, callback_d
         action = callback_data.action
         driver_id = callback_data.driver_id
         requested_company_id = callback_data.requested_company_id
+        driver = await get_by_id(driver_id, "drivers")
+        company = await get_by_id(requested_company_id, "companies")
 
         if action == "cancel":
             await callback_query.message.edit_text("Cancelled 🚫")
@@ -214,9 +225,6 @@ async def handle_driver_callback(callback_query: types.CallbackQuery, callback_d
             return
 
         elif action == "send":
-            driver = await get_by_id(driver_id, "drivers")
-            company = await get_by_id(requested_company_id, "companies")
-
             # Driverga xabar yuborish
             driver_message = (
                 f"New request⚡️\n"+
@@ -237,6 +245,45 @@ async def handle_driver_callback(callback_query: types.CallbackQuery, callback_d
             await callback_query.bot.send_message(chat_id=driver["id"], text=driver_message, reply_markup=reply_markup)
             await callback_query.answer("Request sent to the driver!")
             return
+        
+        elif action == "cdl":
+            cdl_request_message = (
+                f"New request for CDL⚡️\n"+
+                f"Company id: {company['id']}\n"+
+                f"Name: {company['company_name']}\n"+
+                f"DOT: {company['dot']}\n"+
+                f"MC: {company['mc']}\n"+
+                f"Address: {company['address']}\n"+
+                f"Trucks: {company['current_trucks']}\n"+
+                f"Email: {company['company_email']}\n"+
+                f"Contact: {company['company_contact']}"
+            )
+            accept_button = InlineKeyboardButton(text="Accept ✅", callback_data=f"cdlaccept_{requested_company_id}")
+            reject_button = InlineKeyboardButton(text="Reject ❌", callback_data=f"cdlreject_{requested_company_id}")
+            reply_markup = InlineKeyboardMarkup(inline_keyboard=[[accept_button, reject_button]])
+            await callback_query.bot.send_message(chat_id=driver["id"], text=cdl_request_message, reply_markup=reply_markup)
+            await callback_query.answer("Request sent to the driver!")
+            return
+        
+        elif action == "medicalcard":
+            medicalcard_request_message = (
+                f"New request for Medical Card⚡️\n"+
+                f"Company id: {company['id']}\n"+
+                f"Name: {company['company_name']}\n"+
+                f"DOT: {company['dot']}\n"+
+                f"MC: {company['mc']}\n"+
+                f"Address: {company['address']}\n"+
+                f"Trucks: {company['current_trucks']}\n"+
+                f"Email: {company['company_email']}\n"+
+                f"Contact: {company['company_contact']}"
+            )
+            accept_button = InlineKeyboardButton(text="Accept ✅", callback_data=f"medicalcardaccept_{requested_company_id}")
+            reject_button = InlineKeyboardButton(text="Reject ❌", callback_data=f"medicalcardreject_{requested_company_id}")
+            reply_markup = InlineKeyboardMarkup(inline_keyboard=[[accept_button, reject_button]])
+            await callback_query.bot.send_message(chat_id=driver["id"], text=medicalcard_request_message, reply_markup=reply_markup)
+            await callback_query.answer("Request sent to the driver!")
+            return
+
     except Exception as ex:
         print(ex)
         await callback_query.answer("Slow!")
@@ -258,6 +305,59 @@ async def handle_driver_response(callback_query: types.CallbackQuery):
         await callback_query.message.edit_text("Accepted ✅")
     elif action == "reject":
         await callback_query.bot.send_message(chat_id=company_id, text=f"Driver: {callback_query.message.chat.id} rejected❌")
+        await callback_query.answer("Rejected ❌")
+        await callback_query.message.edit_text("Rejected ❌")
+
+@router.callback_query(lambda c: c.data.startswith("cdlaccept_") or c.data.startswith("cdlreject_"))
+async def handle_driver_response_for_cdl(callback_query: types.CallbackQuery):
+    data = callback_query.data.split("_")
+    action = data[0]
+    company_id = int(data[1])
+    driver_id = callback_query.message.chat.id
+
+    if action == "cdlaccept":
+        cdl_image = await get_latest_by_date(driver_id, "cdl_image", "created_date")
+        if not cdl_image:
+            callback_query.answer("You did not upload cdl!")
+            return
+        
+        front_side = FSInputFile(cdl_image['front_side'])
+        back_side = FSInputFile(cdl_image['back_side'])
+        media_group = [
+            types.InputMediaPhoto(media=front_side),
+            types.InputMediaPhoto(media=back_side, caption=f"Driver {callback_query.message.chat.id}'s CDL")
+        ]
+
+        await callback_query.bot.send_media_group(chat_id=company_id, media=media_group)
+        await callback_query.answer("Accepted ✅")
+        await callback_query.message.edit_text("Sent CDL to company ✅")
+    
+    elif action == "cdlreject":
+        await callback_query.bot.send_message(chat_id=company_id, text=f"Driver: {callback_query.message.chat.id} rejected your cdl request❌")
+        await callback_query.answer("Rejected ❌")
+        await callback_query.message.edit_text("Rejected ❌")
+
+@router.callback_query(lambda c: c.data.startswith("medicalcardaccept_") or c.data.startswith("medicalcardreject_"))
+async def handle_driver_response_for_medcard(callback_query: types.CallbackQuery):
+    data = callback_query.data.split("_")
+    action = data[0]
+    company_id = int(data[1])
+    driver_id = callback_query.message.chat.id
+
+    if action == "medicalcardaccept":
+        medicalcard_image = await get_by_id(driver_id, "medical_card_image")
+        if not medicalcard_image:
+            await callback_query.answer("You didn't upload Medical Card!")
+            return
+        
+        photo = FSInputFile(medicalcard_image['file_path'])
+
+        await callback_query.bot.send_photo(chat_id=company_id, photo=photo, caption=f"Driver {callback_query.message.chat.id}'s Medical Card")
+        await callback_query.answer("Accepted ✅")
+        await callback_query.message.edit_text("Sent Medical Card image to company ✅")
+    
+    elif action == "medicalcardreject":
+        await callback_query.bot.send_message(chat_id=company_id, text=f"Driver: {callback_query.message.chat.id} rejected your Medical Card request❌")
         await callback_query.answer("Rejected ❌")
         await callback_query.message.edit_text("Rejected ❌")
 

@@ -7,6 +7,7 @@ from aiogram.filters.callback_data import CallbackData
 from db import *
 from .functions import *
 import keyboars
+from config import ADMINS
 
 
 router = Router()
@@ -361,3 +362,26 @@ async def deleteDriver(message: types.Message, state: FSMContext):
         await message.answer("Deleted!", reply_markup=keyboars.admin_menu)
     except:
         await message.answer("Something went wrong, please try again, /start - and try again")
+
+#endregion
+class AddMoneyCompany(StatesGroup):
+    Amount = State()
+
+#region Add Money Company
+@router.message(F.text == "Add money COMPANY")
+async def startAddMoneyCompany(message: types.Message, state: FSMContext):
+    try:
+        user_id = message.from_user.id
+        if user_id in ADMINS:
+            await state.set_state(AddMoneyCompany.Amount)
+            await message.answer("Enter amount: ", reply_markup=keyboars.cancel)
+    except:
+        await message.answer("Something went wrong, please try again, /start - and try again", reply_markup=types.ReplyKeyboardRemove())
+
+@router.message(AddMoneyCompany.Amount)
+async def addMoneyToCompany(message: types.Message, state: FSMContext):
+    try:
+        amount = message.text
+        pass
+    except:
+        await message.answer("Something went wrong, please try again, /start - and try again", reply_markup=types.ReplyKeyboardRemove())
