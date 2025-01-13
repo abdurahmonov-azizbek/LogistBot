@@ -14,3 +14,4 @@ DB_CONFIG = {
 }
 
 ADMINS = [int(os.getenv("ADMIN")), int(os.getenv("ADMIN2"))]
+BOT_LINK = os.getenv("BOT")

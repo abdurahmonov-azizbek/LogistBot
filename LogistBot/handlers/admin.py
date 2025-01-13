@@ -1,14 +1,13 @@
 from aiogram import Router, types, F
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram.filters.callback_data import CallbackData
 from db import *
 from .functions import *
 import keyboars
 from config import ADMINS
-
+from bot_instance import bot
+import asyncio
+from db import *
 
 router = Router()
 
@@ -364,10 +363,11 @@ async def deleteDriver(message: types.Message, state: FSMContext):
         await message.answer("Something went wrong, please try again, /start - and try again")
 
 #endregion
+#region Add Money Company
+
 class AddMoneyCompany(StatesGroup):
     Amount = State()
 
-#region Add Money Company
 @router.message(F.text == "Add money COMPANY")
 async def startAddMoneyCompany(message: types.Message, state: FSMContext):
     try:
@@ -381,7 +381,346 @@ async def startAddMoneyCompany(message: types.Message, state: FSMContext):
 @router.message(AddMoneyCompany.Amount)
 async def addMoneyToCompany(message: types.Message, state: FSMContext):
     try:
-        amount = message.text
-        pass
+        amount = str(message.text)
+        if not amount.isdigit():
+            await message.answer("Enter only numbers!")
+            return
+        
+        await state.update_data(amount=int(amount))
+        data = await state.get_data()
+        amount = data['amount']
+        await state.clear()
+        await message.answer("Proccecing....")
+        companies_balance = await get_all("CompanyBalance")
+        
+        for company_balance in companies_balance:
+            await update_balance("CompanyBalance", company_balance['id'], company_balance['balance'] + amount)
+
+        await message.answer("Done!", reply_markup=admin_menu)
+
     except:
+        await message.answer("Something went wrong, please try again, /start - and try again", reply_markup=types.ReplyKeyboardRemove())
+
+#region
+
+#region Add money DRIVER
+class AddMoneyDriver(StatesGroup):
+    Amount = State()
+
+@router.message(F.text == "Add money DRIVER")
+async def startAddMoneyDriver(message: types.Message, state: FSMContext):
+    try:
+        user_id = message.from_user.id
+        if user_id in ADMINS:
+            await state.set_state(AddMoneyDriver.Amount)
+            await message.answer("Enter amount: ", reply_markup=keyboars.cancel)
+    except:
+        await message.answer("Something went wrong, please try again, /start - and try again", reply_markup=types.ReplyKeyboardRemove())
+
+@router.message(AddMoneyDriver.Amount)
+async def addMoneyToDriver(message: types.Message, state: FSMContext):
+    try:
+        amount = str(message.text)
+        if not amount.isdigit():
+            await message.answer("Enter only numbers!")
+            return
+        
+        await state.update_data(amount=int(amount))
+        data = await state.get_data()
+        amount = data['amount']
+        await state.clear()
+        await message.answer("Proccecing....")
+        drivers_balance = await get_all("DriverBalance")
+        
+        for driver_balance in drivers_balance:
+            await update_balance("DriverBalance", driver_balance['id'], driver_balance['balance'] + amount)
+
+        await message.answer("Done!", reply_markup=admin_menu)
+
+    except Exception as e:
+        print(e)
+        await message.answer("Something went wrong, please try again, /start - and try again", reply_markup=types.ReplyKeyboardRemove())
+
+
+#endregion
+
+#region Send message to all companies
+class SendMessageCompany(StatesGroup):
+    Message = State()
+
+@router.message(F.text == "Send message to companies")
+async def sendMessageCompanies(message: types.Message, state: FSMContext):
+    try:
+        user_id = message.from_user.id
+        if user_id in ADMINS:
+            await state.set_state(SendMessageCompany.Message)
+            await message.answer("Enter message to send to all companies: ", reply_markup=keyboars.cancel)
+    except Exception as e:
+        print(e)
+        await message.answer("Something went wrong, please try again, /start - and try again", reply_markup=types.ReplyKeyboardRemove())
+
+@router.message(SendMessageCompany.Message)
+async def sendToAllCompanies(message: types.Message, state: FSMContext):
+    try:
+        content = message.text
+        companies = await get_all("companies")
+        await message.answer("Sending....")
+        errs = 0
+        for company in companies:
+            try:
+                bot.send_message(company['id'], content)
+                await asyncio.sleep(0.5)
+            except:
+                errs += 1
+                continue
+        await message.answer(f"Done, errors: {errs}, Sent: {len(companies)-errs}", reply_markup=admin_menu)
+        
+    except Exception as e:
+        print(e)
+        await message.answer("Something went wrong, please try again, /start - and try again", reply_markup=types.ReplyKeyboardRemove())
+#endregion
+
+#region Send message to all drivers
+class SendMessageDriver(StatesGroup):
+    Message = State()
+
+@router.message(F.text == "Send message to drivers")
+async def sendMessageDrivers(message: types.Message, state: FSMContext):
+    try:
+        user_id = message.from_user.id
+        if user_id in ADMINS:
+            await state.set_state(SendMessageDriver.Message)
+            await message.answer("Enter message to send to all drivers: ", reply_markup=keyboars.cancel)
+    except Exception as e:
+        print(e)
+        await message.answer("Something went wrong, please try again, /start - and try again", reply_markup=types.ReplyKeyboardRemove())
+
+@router.message(SendMessageDriver.Message)
+async def sendToAllDrivers(message: types.Message, state: FSMContext):
+    try:
+        content = message.text
+        drivers = await get_all("drivers")
+        await message.answer("Sending...")
+        errs = 0
+        for driver in drivers:
+            try:
+                bot.send_message(driver['id'], content)
+                await asyncio.sleep(0.5)
+            except:
+                errs += 1
+                continue
+        await message.answer(f"Done, Error: {errs} Sent: {len(drivers)-errs}", reply_markup=admin_menu)
+    except Exception as e:
+        print(e)
+        await message.answer("Something went wrong, please try again, /start - and try again", reply_markup=types.ReplyKeyboardRemove())
+#endregion
+
+#region Add one company balance
+class AddOneCompanyBalanceStates(StatesGroup):
+    Id = State()
+    Amount = State()
+
+@router.message(F.text == "Add money to one company balance")
+async def startAddMoneyToOneCompanyBalance(message: types.Message, state: FSMContext):
+    try:
+        user_id = message.from_user.id
+        if user_id in ADMINS:
+            await state.set_state(AddOneCompanyBalanceStates.Id)
+            await message.answer("Enter company id: ", reply_markup=keyboars.cancel)
+    except Exception as e:
+        print(e)
+        await message.answer("Something went wrong, please try again, /start - and try again", reply_markup=types.ReplyKeyboardRemove())
+
+@router.message(AddOneCompanyBalanceStates.Id)
+async def ask_Amount(message: types.Message, state: FSMContext):
+    try:
+        company_id = int(message.text)
+        await state.update_data(id=company_id)
+        await state.set_state(AddOneCompanyBalanceStates.Amount)
+        await message.answer("Enter amount: ")
+    except Exception as e:
+        print(e)
+        await message.answer("Something went wrong, please try again, /start - and try again", reply_markup=types.ReplyKeyboardRemove())
+
+@router.message(AddOneCompanyBalanceStates.Amount)
+async def addMoneyToOneCompanyBalance(message: types.Message, state: FSMContext):
+    try:
+        await state.update_data(amount=int(message.text))
+        data = await state.get_data()
+        await state.clear()
+        company_id = data['id']
+        amount = data['amount']
+        company_balance = await get_by_id(company_id, "CompanyBalance")
+        await update_balance("CompanyBalance", company_id, company_balance['balance'] + amount)
+        await message.answer("Added!", reply_markup=keyboars.admin_menu)
+
+    except Exception as e:
+        print(e)
+        await message.answer("Something went wrong, please try again, /start - and try again", reply_markup=types.ReplyKeyboardRemove())
+
+#endregion
+
+#region Add money to one driver's balance
+class AddOneDriverBalanceStates(StatesGroup):
+    Id = State()
+    Amount = State()
+
+@router.message(F.text == "Add money to one driver balance")
+async def startAddMoneyToOneDriverBalance(message: types.Message, state: FSMContext):
+    try:
+        user_id = message.from_user.id
+        if user_id in ADMINS:
+            await state.set_state(AddOneDriverBalanceStates.Id)
+            await message.answer("Enter driver id: ", reply_markup=keyboars.cancel)
+    except Exception as e:
+        print(e)
+        await message.answer("Something went wrong, please try again, /start - and try again", reply_markup=types.ReplyKeyboardRemove())
+
+@router.message(AddOneDriverBalanceStates.Id)
+async def ask_Amount(message: types.Message, state: FSMContext):
+    try:
+        driver_id = int(message.text)
+        await state.update_data(id=driver_id)
+        await state.set_state(AddOneDriverBalanceStates.Amount)
+        await message.answer("Enter amount: ")
+    except Exception as e:
+        print(e)
+        await message.answer("Something went wrong, please try again, /start - and try again", reply_markup=types.ReplyKeyboardRemove())
+
+@router.message(AddOneDriverBalanceStates.Amount)
+async def addMoneyToOneDriverBalance(message: types.Message, state: FSMContext):
+    try:
+        await state.update_data(amount=int(message.text))
+        data = await state.get_data()
+        await state.clear()
+        driver_id = data['id']
+        amount = data['amount']
+        driver_balance = await get_by_id(driver_id, "DriverBalance")
+        await update_balance("DriverBalance", driver_id, driver_balance['balance'] + amount)
+        await message.answer("Added!", reply_markup=keyboars.admin_menu)
+
+    except Exception as e:
+        print(e)
+        await message.answer("Something went wrong, please try again, /start - and try again", reply_markup=types.ReplyKeyboardRemove())
+#endregion
+
+#region Set invite link price for company
+class SetRefPriceCompany(StatesGroup):
+    Amount = State()
+
+@router.message(F.text == "Set invite price for company")
+async def setCompanyRefPrice(message: types.Message, state: FSMContext):
+    try:
+        user_id = message.from_user.id
+        if user_id in ADMINS:
+            await state.set_state(SetRefPriceCompany.Amount)
+            await message.answer("Enter amount: ", reply_markup=keyboars.cancel)
+    except Exception as e:
+        print(e)
+        await message.answer("Something went wrong, please try again, /start - and try again", reply_markup=types.ReplyKeyboardRemove())
+
+@router.message(SetRefPriceCompany.Amount)
+async def setRefPriceForCompany(message: types.Message, state: FSMContext):
+    try:
+        amount = float(message.text)
+        await state.clear()
+        await update_settings("referal_price_for_company", amount)
+        await message.answer("Updated!", reply_markup=keyboars.admin_menu)
+    except Exception as e:
+        print(e)
+        await message.answer("Something went wrong, please try again, /start - and try again", reply_markup=types.ReplyKeyboardRemove())
+
+#endregion
+
+#region Set invite link price for driver
+class SetRefPriceDriver(StatesGroup):
+    Amount = State()
+
+@router.message(F.text == "Set invite price for driver")
+async def setDriverRefPrice(message: types.Message, state: FSMContext):
+    try:
+        user_id = message.from_user.id
+        if user_id in ADMINS:
+            await state.set_state(SetRefPriceDriver.Amount)
+            await message.answer("Enter amount: ", reply_markup=keyboars.cancel)
+    except Exception as e:
+        print(e)
+        await message.answer("Something went wrong, please try again, /start - and try again", reply_markup=types.ReplyKeyboardRemove())
+
+@router.message(SetRefPriceDriver.Amount)
+async def setRefPriceForDriver(message: types.Message, state: FSMContext):
+    try:
+        amount = float(message.text)
+        await state.clear()
+        await update_settings("referal_price_for_driver", amount)
+        await message.answer("Updated!", reply_markup=keyboars.admin_menu)
+    except Exception as e:
+        print(e)
+        await message.answer("Something went wrong, please try again, /start - and try again", reply_markup=types.ReplyKeyboardRemove())
+#endregion
+
+#region Set price for company
+class PriceForCompany(StatesGroup):
+    Amount = State()
+
+@router.message(F.text == "Set price for company")
+async def handleSetPriceForCompany(message: types.Message, state: FSMContext):
+    try:
+        user_id = message.from_user.id
+        if user_id in ADMINS:
+            await state.set_state(PriceForCompany.Amount)
+            await message.answer("Enter amount: ", reply_markup=keyboars.cancel)
+    except Exception as e:
+        print(e)
+        await message.answer("Something went wrong, please try again, /start - and try again", reply_markup=types.ReplyKeyboardRemove())
+
+@router.message(PriceForCompany.Amount)
+async def updatePriceForCompany(message: types.Message, state: FSMContext):
+    try:
+        amount = float(message.text)
+        await state.clear()
+        await update_settings("daily_price_for_company", amount)
+        await message.answer("Updated!", reply_markup=keyboars.admin_menu)
+    except Exception as e:
+        print(e)
+        await message.answer("Something went wrong, please try again, /start - and try again", reply_markup=types.ReplyKeyboardRemove())
+
+#endregion
+
+#region Set price for driver
+class PriceForDriver(StatesGroup):
+    Amount = State()
+
+@router.message(F.text == "Set price for driver")
+async def handleSetPriceForDriver(message: types.Message, state: FSMContext):
+    try:
+        user_id = message.from_user.id
+        if user_id in ADMINS:
+            await state.set_state(PriceForDriver.Amount)
+            await message.answer("Enter amount: ", reply_markup=keyboars.cancel)
+    except Exception as e:
+        print(e)
+        await message.answer("Something went wrong, please try again, /start - and try again", reply_markup=types.ReplyKeyboardRemove())
+
+@router.message(PriceForDriver.Amount)
+async def updatePriceForDriver(message: types.Message, state: FSMContext):
+    try:
+        amount = float(message.text)
+        await state.clear()
+        await update_settings("daily_price_for_driver", amount)
+        await message.answer("Updated!", reply_markup=keyboars.admin_menu)
+    except Exception as e:
+        print(e)
+        await message.answer("Something went wrong, please try again, /start - and try again", reply_markup=types.ReplyKeyboardRemove())
+
+#endregion
+@router.message(F.text == "Show prices⚙️")
+async def showPrices(message: types.Message):
+    try:
+        user_id = message.from_user.id
+        if user_id in ADMINS:
+            settings = await get_settings()
+            await message.answer(f"🏢Dialy price for company: {settings['daily_price_for_company']}$\n🚚Dialy price for driver: {settings['daily_price_for_driver']}$\n🖇Invite price for company: {settings['referal_price_for_company']}$\n🖇Invite price for driver: {settings['referal_price_for_driver']}$")
+    except Exception as e:
+        print(e)
         await message.answer("Something went wrong, please try again, /start - and try again", reply_markup=types.ReplyKeyboardRemove())

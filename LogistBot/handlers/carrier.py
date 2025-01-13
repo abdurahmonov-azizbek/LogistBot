@@ -6,6 +6,7 @@ from .functions import *
 from aiogram.types import ReplyKeyboardMarkup, ReplyKeyboardRemove, KeyboardButton
 from db import *
 import keyboars
+from bot_instance import bot
 
 router = Router()
 
@@ -94,6 +95,30 @@ async def finish_registration(message: types.Message, state: FSMContext):
     await save_carrier_data(data)  # Ma'lumotlarni saqlash
     await save_company_balance(message.from_user.id, 100) # Yangi company uchun balance yaratish
     await save_default_driver_filter(message.from_user.id)
+
+    # taklif qilingan yoki yo'qligini tekshirish
+    user_id = message.from_user.id
+    referal = await get_by_id(user_id, "referals", "invited_user_id")
+    settings = await get_settings()
+    if referal:
+        reffer_id = referal['id']
+        reffer = await get_by_id(reffer_id, "companies")
+        if reffer:
+            balance = await get_by_id(reffer_id, "CompanyBalance")
+            await update_balance("CompanyBalance", reffer_id, balance['balance'] + settings['referal_price_for_company'])
+            
+        else:
+            reffer = await get_by_id(reffer_id, "drivers")
+            balance = await get_by_id(reffer_id, "DriverBalance")
+            await update_balance("DriverBalance", reffer_id, balance['balance'] + settings['referal_price_for_company'])
+
+        await delete_by_id(message.from_user.id, "referals", "invited_user_id")
+        try:
+            await bot.send_message(reffer_id, "🎉 Congratulations, the reward has been added to your account")
+        except:
+            pass
+            
+
     await state.clear()
     await message.answer("Amazing! \nRegistration complete!", reply_markup=keyboars.carrier_main_menu)
 

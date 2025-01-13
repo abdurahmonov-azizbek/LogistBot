@@ -31,7 +31,18 @@ dp.include_router(search_roter)
 @dp.message(Command("start"))
 async def welcome(message: Message):
     # await message.delete()
+    start_info = message.text.split()
     user_id = message.from_user.id
+
+    if len(start_info) > 1:
+        invited_id = int(start_info[-1])
+        company = await get_by_id(user_id, "companies")
+        driver = await get_by_id(user_id, "drivers")
+
+        if user_id != invited_id and not company and not driver:
+            await save_referal(invited_id, user_id)
+            await bot.send_message(invited_id, "🎊The friend you invited visited the bot, if he/she registers you will be rewarded")
+
     if user_id in config.ADMINS:
         await message.answer("You are admin!, Welcome...", reply_markup=keyboars.admin_menu)
         return

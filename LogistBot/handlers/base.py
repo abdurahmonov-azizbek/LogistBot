@@ -9,6 +9,7 @@ from .functions import *
 import keyboars
 import asyncio
 from bot_instance import bot
+from config import BOT_LINK
 
 
 router = Router()
@@ -382,3 +383,12 @@ async def checkBalance(id) -> bool:
         return driverBalance['balance'] >= settings['daily_price_for_driver']
     
     return False
+
+@router.message(F.text == "Invite friends🔗")
+async def getRefLink(message: types.Message):
+    try:
+        user_id = message.from_user.id
+        reflink = f"{BOT_LINK}?start={user_id}"
+        await message.answer(f"🔗Your invite link: {reflink}")
+    except:
+        await message.answer("Something wrong, Please try again.")

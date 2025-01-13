@@ -212,10 +212,10 @@ async def save_special_loads(data: dict):
 
     await conn.close()
 
-async def get_by_id(id: int, table_name: str):
+async def get_by_id(id: int, table_name: str, id_column: str = "id"):
     try:
         conn = await get_db_connection()
-        query = f"SELECT * FROM {table_name} WHERE id = $1"
+        query = f"SELECT * FROM {table_name} WHERE {id_column} = $1"
         row = await conn.fetchrow(query, id)
 
         if row:
@@ -516,6 +516,7 @@ async def update_balance(table_name, id, new_balance):
     finally:
         await conn.close()
 
+
 async def get_settings():
     try:
         conn = await get_db_connection()
@@ -528,3 +529,26 @@ async def get_settings():
             raise Exception("Settings not found!")
     except Exception as ex:
         print(ex)
+    finally:
+        await conn.close()
+
+
+async def update_settings(column, value):
+    try:
+        conn = await get_db_connection()
+        query = f"UPDATE settings SET {column} = $1"
+        await conn.execute(query, value)
+    except Exception as e:
+        print(e)
+    finally:
+        await conn.close()
+
+async def save_referal(id, invited_id):
+    try:
+        conn = await get_db_connection()
+        query = "INSERT INTO referals(id, invited_user_id) VALUES ($1, $2)"
+        await conn.execute(query, id, invited_id)
+    except Exception as e:
+        print(e)
+    finally:
+        await conn.close()

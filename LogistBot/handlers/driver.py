@@ -117,6 +117,27 @@ async def finish_driver_registration(message: types.Message, state: FSMContext):
         await save_driver(data)
         await save_driver_status(message.from_user.id, True)
         await save_driver_balance(message.from_user.id, 0)
+        # taklif qilingan yoki yo'qligini tekshirish
+        user_id = message.from_user.id
+        referal = await get_by_id(user_id, "referals", "invited_user_id")
+        settings = await get_settings()
+        if referal:
+            reffer_id = referal['id']
+            reffer = await get_by_id(reffer_id, "companies")
+            if reffer:
+                balance = await get_by_id(reffer_id, "CompanyBalance")
+                await update_balance("CompanyBalance", reffer_id, balance['balance'] + settings['referal_price_for_driver'])
+                
+            else:
+                reffer = await get_by_id(reffer_id, "drivers")
+                balance = await get_by_id(reffer_id, "DriverBalance")
+                await update_balance("DriverBalance", reffer_id, balance['balance'] + settings['referal_price_for_driver'])
+
+            await delete_by_id(message.from_user.id, "referals", "invited_user_id")
+            try:
+                await bot.send_message(reffer_id, "🎉 Congratulations, the reward has been added to your account")
+            except:
+                pass
         await state.clear()
         await message.answer("Amazing!, Thank you", reply_markup=keyboars.driver_main_menu)
     except:

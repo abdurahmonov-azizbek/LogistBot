@@ -16,7 +16,7 @@ carrier_main_menu = ReplyKeyboardMarkup(
         [KeyboardButton(text="Search Drivers🔍"), KeyboardButton(text="Account")],
         [KeyboardButton(text="Add Informationℹ️"), KeyboardButton(text="Settings⚙️")],
         [KeyboardButton(text="Delete Account❌"), KeyboardButton(text="Edit✏️")],
-        [KeyboardButton(text="Support🔧")]
+        [KeyboardButton(text="Invite friends🔗"), KeyboardButton(text="Support🔧")]
     ],
 )
 
@@ -90,7 +90,7 @@ driver_main_menu = ReplyKeyboardMarkup(
         [KeyboardButton(text="Search Companies🔎"), KeyboardButton(text="Account")],
         [KeyboardButton(text="Add Informationℹ️"), KeyboardButton(text="Status⚙️")],
         [KeyboardButton(text="Delete Account❌"), KeyboardButton(text="Edit✏️")],
-        [KeyboardButton(text="Support🔧")]
+        [KeyboardButton(text="Invite friends🔗"), KeyboardButton(text="Support🔧")]
     ],
 )
 
@@ -136,11 +136,15 @@ yesno = ReplyKeyboardMarkup(
 admin_menu = ReplyKeyboardMarkup(
     resize_keyboard=True,
     keyboard=[
-        [KeyboardButton(text="Statistics📊")],
+        [KeyboardButton(text="Statistics📊"), KeyboardButton(text="Show prices⚙️")],
         [KeyboardButton(text="Add company➕"), KeyboardButton(text="Add driver➕")],
         [KeyboardButton(text="Search company🔎"), KeyboardButton(text="Search driver🔎")],
         [KeyboardButton(text="Delete company❌"), KeyboardButton(text="Delete driver❌")],
         [KeyboardButton(text="Add money COMPANY"), KeyboardButton(text="Add money DRIVER")],
+        [KeyboardButton(text="Send message to companies"), KeyboardButton(text="Send message to drivers")],
+        [KeyboardButton(text="Add money to one company balance"), KeyboardButton(text="Add money to one driver balance")],
+        [KeyboardButton(text="Set invite price for company"), KeyboardButton(text="Set invite price for driver")],
+        [KeyboardButton(text="Set price for company"), KeyboardButton(text="Set price for driver")],
     ]
 )
 
