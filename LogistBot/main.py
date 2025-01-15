@@ -59,7 +59,7 @@ async def welcome(message: Message):
         return
 
     await message.reply(
-        "Welcome!, Please choose how you want to register:",
+        "Welcome!, Please choose your position to register:",
         reply_markup=keyboars.register_keyboard
     )
 

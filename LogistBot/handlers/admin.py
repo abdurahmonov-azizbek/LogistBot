@@ -463,12 +463,13 @@ async def sendMessageCompanies(message: types.Message, state: FSMContext):
 async def sendToAllCompanies(message: types.Message, state: FSMContext):
     try:
         content = message.text
+        await state.clear()
         companies = await get_all("companies")
         await message.answer("Sending....")
         errs = 0
         for company in companies:
             try:
-                bot.send_message(company['id'], content)
+                await bot.send_message(company['id'], content)
                 await asyncio.sleep(0.5)
             except:
                 errs += 1
@@ -499,12 +500,13 @@ async def sendMessageDrivers(message: types.Message, state: FSMContext):
 async def sendToAllDrivers(message: types.Message, state: FSMContext):
     try:
         content = message.text
+        await state.clear()
         drivers = await get_all("drivers")
         await message.answer("Sending...")
         errs = 0
         for driver in drivers:
             try:
-                bot.send_message(driver['id'], content)
+                await bot.send_message(driver['id'], content)
                 await asyncio.sleep(0.5)
             except:
                 errs += 1

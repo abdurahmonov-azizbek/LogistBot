@@ -42,13 +42,13 @@ async def get_driver_full_info(driver: dict, user_id) -> str:
     info = []
     driver_information = f"ℹ️Driver info\nID: {driver['id']}\nDriver type: {driver['driver_type']}\nFirst name: {driver['first_name']}\nLast name: {driver['last_name']}\nBirth date: {driver['birth_day']}\nAddress: {driver['address']}\nEmail: {driver['email']}\nPhone number: {driver['phone_number']}"
     info.append(driver_information)
-    cdl = await get_by_id(user_id, "cdls")
-    if cdl:
-        info.append(f"ℹ️CDL\n\nCDL: {cdl['cdl']}\nState of CDL: {cdl['state_of_cdl']}\nClass: {cdl['class']}\nExpire Date: {cdl['expire_date']}\nIssue Date: {cdl['issue_date']}")
+    # cdl = await get_by_id(user_id, "cdls")
+    # if cdl:
+    #     info.append(f"ℹ️CDL\n\nCDL: {cdl['cdl']}\nState of CDL: {cdl['state_of_cdl']}\nClass: {cdl['class']}\nExpire Date: {cdl['expire_date']}\nIssue Date: {cdl['issue_date']}")
 
-    medical_card = await get_by_id(user_id, "MedicalCards")
-    if medical_card:
-        info.append(f"\nℹ️Medical card\nNational Registry: {medical_card['national_registry']}\nExpiration Date: {medical_card['expiration_date']}\nDate of Certificate {medical_card['date_certificate_signed']}")
+    # medical_card = await get_by_id(user_id, "MedicalCards")
+    # if medical_card:
+    #     info.append(f"\nℹ️Medical card\nNational Registry: {medical_card['national_registry']}\nExpiration Date: {medical_card['expiration_date']}\nDate of Certificate {medical_card['date_certificate_signed']}")
 
     return info
 

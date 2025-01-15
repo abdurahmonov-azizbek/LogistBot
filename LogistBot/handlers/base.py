@@ -103,13 +103,13 @@ async def show_options(message: types.Message):
         if driver['driver_type'] == "Company driver" and (driver['miles_dialy'] == None):
             driver_info_menu.append([KeyboardButton(text="More info (only for Company drivers)")])
 
-        cdl = await get_by_id(user_id, "cdls")
-        if not cdl:
-            driver_info_menu.append([KeyboardButton(text="CDL")])
+        # cdl = await get_by_id(user_id, "cdls")
+        # if not cdl:
+        #     driver_info_menu.append([KeyboardButton(text="CDL")])
 
-        medical_card = await get_by_id(user_id, "MedicalCards")
-        if not medical_card:
-            driver_info_menu.append([KeyboardButton(text="Medical Card")])
+        # medical_card = await get_by_id(user_id, "MedicalCards")
+        # if not medical_card:
+        #     driver_info_menu.append([KeyboardButton(text="Medical Card")])
 
         note = await get_by_id(user_id, "DriverNotes")
         if not note:
