@@ -239,12 +239,12 @@ async def ask_Column(message: types.Message, state: FSMContext):
                     if key not in ["miles_dialy", "miles_weekly", "work_days_type", "work_days", "home_days", "nigth_or_day_time_PU"]:
                         columns_keyboard.append([KeyboardButton(text=value)]) 
         
-        elif table == "cdls":
-            for value in keyboars.cdls_columns.values():
-                columns_keyboard.append([KeyboardButton(text=value)])    
-        elif table == "MedicalCards":
-            for value in keyboars.MedicalCards_columns.values():
-                columns_keyboard.append([KeyboardButton(text=value)])    
+        # elif table == "cdls":
+        #     for value in keyboars.cdls_columns.values():
+        #         columns_keyboard.append([KeyboardButton(text=value)])    
+        # elif table == "MedicalCards":
+        #     for value in keyboars.MedicalCards_columns.values():
+        #         columns_keyboard.append([KeyboardButton(text=value)])    
 
         if table == "drivers":
             driver = await get_by_id(message.from_user.id, "drivers")

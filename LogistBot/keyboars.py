@@ -325,8 +325,8 @@ company_tables = {
 
 driver_tables = {
     "drivers": "Driver info",
-    "cdls": "CDL",
-    "MedicalCards": "Medical Card"
+    # "cdls": "CDL",
+    # "MedicalCards": "Medical Card"
 }
 
 companies_columns = {
