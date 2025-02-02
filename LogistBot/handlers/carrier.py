@@ -7,6 +7,8 @@ from aiogram.types import ReplyKeyboardMarkup, ReplyKeyboardRemove, KeyboardButt
 from db import *
 import keyboars
 from bot_instance import bot
+from config import USER_ACTIVITY
+from datetime import datetime
 
 router = Router()
 
@@ -23,6 +25,7 @@ class CarrierRegistration(StatesGroup):
 @router.message(F.text == "Carrier")
 async def start_carrier_registration(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
+    USER_ACTIVITY[user_id] = datetime.now()
     company = await get_by_id(user_id, "companies")
     
     if company:
@@ -35,6 +38,7 @@ async def start_carrier_registration(message: types.Message, state: FSMContext):
 #Kompaniya nomi
 @router.message(CarrierRegistration.CompanyName)
 async def ask_dot(message: types.Message, state: FSMContext):
+    USER_ACTIVITY[message.from_user.id] = datetime.now()
     await state.update_data(company_name=message.text)
     await state.set_state(CarrierRegistration.DOT)
     await message.answer("[2/7] Enter your DOT number:", reply_markup=keyboars.cancel)
@@ -42,6 +46,7 @@ async def ask_dot(message: types.Message, state: FSMContext):
 # DOT raqami
 @router.message(CarrierRegistration.DOT)
 async def ask_mc(message: types.Message, state: FSMContext):
+    USER_ACTIVITY[message.from_user.id] = datetime.now()
     await state.update_data(dot=message.text)
     await state.set_state(CarrierRegistration.MC)
     await message.answer("[3/7] Enter your MC number:", reply_markup=keyboars.cancel)
@@ -49,6 +54,7 @@ async def ask_mc(message: types.Message, state: FSMContext):
 # MC raqami
 @router.message(CarrierRegistration.MC)
 async def ask_address(message: types.Message, state: FSMContext):
+    USER_ACTIVITY[message.from_user.id] = datetime.now()
     await state.update_data(mc=message.text)
     await state.set_state(CarrierRegistration.Address)
     await message.answer("[4/7] Enter company mail address ? (Example: Address, City, State, ZIP) ", reply_markup=keyboars.cancel)
@@ -56,6 +62,7 @@ async def ask_address(message: types.Message, state: FSMContext):
 # Manzil
 @router.message(CarrierRegistration.Address)
 async def ask_current_trucks(message: types.Message, state: FSMContext):
+    USER_ACTIVITY[message.from_user.id] = datetime.now()
     await state.update_data(address=message.text)
     await state.set_state(CarrierRegistration.CurrentTrucks)
     await message.answer("[5/7] How many company trucks you have (number of trucks) ?", reply_markup=keyboars.cancel)
@@ -69,6 +76,7 @@ async def ask_email(message: types.Message, state: FSMContext):
         await message.answer("Please enter a valid number for trucks.")
         return
 
+    USER_ACTIVITY[message.from_user.id] = datetime.now()
     await state.update_data(current_trucks=int(trucks_number))
     await state.set_state(CarrierRegistration.CompanyEmail)
     await message.answer("[6/7] Enter company contact email address!", reply_markup=keyboars.cancel)
@@ -76,6 +84,7 @@ async def ask_email(message: types.Message, state: FSMContext):
 # Email
 @router.message(CarrierRegistration.CompanyEmail)
 async def ask_contact(message: types.Message, state: FSMContext):
+    USER_ACTIVITY[message.from_user.id] = datetime.now()
     await state.update_data(company_email=message.text)
     await state.set_state(CarrierRegistration.CompanyContact)
     await message.answer("[7/7] Enter company contact number!", reply_markup=keyboars.cancel)
@@ -86,6 +95,8 @@ async def finish_registration(message: types.Message, state: FSMContext):
     # formatting us phone number
     phone_number = message.text
     phone_number = phone_number.replace(" ", "").replace("\t", "").replace("\n", "")
+    if phone_number.startswith("+") and len(phone_number) == 10:
+        phone_number = phone_number.replace("+", "")
     if not phone_number.startswith("+1"):
         phone_number = "+1" + phone_number.lstrip("1")
 
@@ -94,7 +105,8 @@ async def finish_registration(message: types.Message, state: FSMContext):
     data.update({"id": message.from_user.id})
     await save_carrier_data(data)  # Ma'lumotlarni saqlash
     await save_company_balance(message.from_user.id, 100) # Yangi company uchun balance yaratish
-    await save_default_driver_filter(message.from_user.id)
+    # await save_default_driver_filter(message.from_user.id)
+    await save_company_status(message.from_user.id, True)
 
     # taklif qilingan yoki yo'qligini tekshirish
     user_id = message.from_user.id
@@ -199,6 +211,7 @@ class CompanyDriverOffers(StatesGroup):
 async def start_filling_company_driver_offer(message: types.Message, state: FSMContext):
     try:
         user_id = message.from_user.id
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         company = await get_by_id(user_id, "companies")
 
         if company is None:
@@ -220,6 +233,7 @@ async def start_filling_company_driver_offer(message: types.Message, state: FSMC
 async def ask_amount_of_driver_salary_forSolor(message: types.Message, state: FSMContext):
     try:          
         await state.update_data(DriverSalaryForSoloUsd=message.text)
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         await state.set_state(CompanyDriverOffers.DriverSalaryForSoloPercentage)
         await message.answer("[2/10] Enter driver salary for solo (%) ?  ", reply_markup=keyboars.cancel)
     except:
@@ -229,6 +243,7 @@ async def ask_amount_of_driver_salary_forSolor(message: types.Message, state: FS
 async def ask_type_for_driverSalaryForTeam(message: types.Message, state: FSMContext):
     try:
         await state.update_data(DriverSalaryForSoloPercentage=message.text)
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         await state.set_state(CompanyDriverOffers.DriverSalaryForTeamUsd)
         await message.answer("[3/10] TEAM drivers pay  $ ? (Example: 0.75 or 0.90) ", reply_markup=keyboars.cancel)
     except:
@@ -238,6 +253,7 @@ async def ask_type_for_driverSalaryForTeam(message: types.Message, state: FSMCon
 async def ask_escrow_per_week(message: types.Message, state: FSMContext):
     try:
         await state.update_data(DriverSalaryForTeamUsd=message.text)
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         await state.set_state(CompanyDriverOffers.EscrowPerWeek)
         await message.answer("[4/10] Escrow per week? ", reply_markup=keyboars.cancel)
     except:
@@ -327,6 +343,7 @@ class OwnerDriverOffers(StatesGroup):
 async def start_owner_driver_offer(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     company = await get_by_id(user_id, "companies")
+    USER_ACTIVITY[message.from_user.id] = datetime.now()
 
     if not company:
         await message.answer("You are not company!")
@@ -343,6 +360,7 @@ async def start_owner_driver_offer(message: types.Message, state: FSMContext):
 @router.message(OwnerDriverOffers.DispatchService)
 async def ask_OfficeAdminType(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         await state.update_data(DispatchService = message.text)
         await state.set_state(OwnerDriverOffers.OfficeAdmin)
         await message.answer("[2/4] Admin fee (weekly) ?", reply_markup=keyboars.cancel)
@@ -352,6 +370,7 @@ async def ask_OfficeAdminType(message: types.Message, state: FSMContext):
 @router.message(OwnerDriverOffers.OfficeAdmin)
 async def ask_ifta(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         await state.update_data(OfficeAdmin=message.text)
         await state.set_state(OwnerDriverOffers.Ifta)
         await message.answer("[3/4] IFTA (weekly) ?", reply_markup=keyboars.cancel)
@@ -361,6 +380,7 @@ async def ask_ifta(message: types.Message, state: FSMContext):
 @router.message(OwnerDriverOffers.Ifta)
 async def ask_insurance(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         await state.update_data(Ifta=message.text)
         await state.set_state(OwnerDriverOffers.Insurance)
         await message.answer("[4/4] Insurance fee (weekly) ?", reply_markup=keyboars.cancel)
@@ -370,6 +390,7 @@ async def ask_insurance(message: types.Message, state: FSMContext):
 @router.message(OwnerDriverOffers.Insurance)
 async def finish_ownerDriverOfferFilling(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         await state.update_data(Insurance=message.text)
         data = await state.get_data()
         data.update({'id': message.from_user.id})
@@ -393,6 +414,7 @@ class LeaseDriverOffers(StatesGroup):
 @router.message(F.text == "Offer for lease driver")
 async def start_leaseDriverOffers(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         user_id = message.from_user.id
         company = await  get_by_id(user_id, "companies")
         if not company:
@@ -412,6 +434,7 @@ async def start_leaseDriverOffers(message: types.Message, state: FSMContext):
 @router.message(LeaseDriverOffers.TruckRentalFee)
 async def ask_truckMiles(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         await state.update_data(TruckRentalFee=message.text)
         await state.set_state(LeaseDriverOffers.TruckMiles)
         await message.answer("[2/7] Per mile fee ? (Example: 0.13 per miles or 0.15 per miles) ", reply_markup=keyboars.cancel)
@@ -430,6 +453,7 @@ async def ask_dispatchService(message: types.Message, state: FSMContext):
 @router.message(LeaseDriverOffers.DispatchService)
 async def ask_safetyServiceType(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         await state.update_data(DispatchService=message.text)
         await state.set_state(LeaseDriverOffers.OfficeAdminUsd)
         await message.answer("[4/7] Admin fee (weekly) ?", reply_markup=keyboars.cancel)
@@ -449,6 +473,7 @@ async def ask_ifta(message: types.Message, state: FSMContext):
 @router.message(LeaseDriverOffers.Ifta)
 async def ask_insuranceType(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         await state.update_data(Ifta=message.text)
         await state.set_state(LeaseDriverOffers.InsuranceType)
         await message.answer("[6/7] Select insurance type: ", reply_markup=keyboars.per_week_month)
@@ -467,6 +492,7 @@ async def ask_Insurance(message: types.Message, state: FSMContext):
 @router.message(LeaseDriverOffers.Insurance)
 async def finish_leaseDriverOffer(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         await state.update_data(Insurance=message.text)
         data = await state.get_data()
         data.update({'id': message.from_user.id})

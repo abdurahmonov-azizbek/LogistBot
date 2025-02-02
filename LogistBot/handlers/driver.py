@@ -10,6 +10,8 @@ from aiogram.types import *
 from .functions import *
 import uuid
 from handlers.base import checkBalance
+from config import USER_ACTIVITY
+from datetime import datetime
 
 router = Router()
 
@@ -28,7 +30,7 @@ class DriverRegistration(StatesGroup):
 @router.message(F.text == "Driver")
 async def ask_driver_type_for_registration(message: types.Message, state: FSMContext):
     try:
-        
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         await state.set_state(DriverRegistration.DriverType)
         await message.answer("[1/7] Choose driver type: ", reply_markup=keyboars.driver_types)
     except:
@@ -39,6 +41,7 @@ async def ask_driver_type_for_registration(message: types.Message, state: FSMCon
 @router.message(DriverRegistration.DriverType)
 async def ask_FirstName(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         await state.update_data(DriverType=message.text)
         await state.set_state(DriverRegistration.FirstName)
         await message.answer("[2/7] Enter first name: ", reply_markup=keyboars.cancel)
@@ -50,6 +53,7 @@ async def ask_FirstName(message: types.Message, state: FSMContext):
 @router.message(DriverRegistration.FirstName)
 async def ask_lastName(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         await state.update_data(FirstName=message.text)
         await state.set_state(DriverRegistration.LastName)
         await message.answer("[3/7] Enter last name: ")
@@ -61,6 +65,7 @@ async def ask_lastName(message: types.Message, state: FSMContext):
 @router.message(DriverRegistration.LastName)
 async def ask_birthDay(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         await state.update_data(LastName=message.text)
         await state.set_state(DriverRegistration.BirthDay)
         await message.answer("[4/7] Enter your birth date: ")
@@ -105,6 +110,7 @@ async def ask_phone(message: types.Message, state: FSMContext):
 @router.message(DriverRegistration.PhoneNumber)
 async def finish_driver_registration(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         # formatting us phone number
         phone_number = message.text
         phone_number = phone_number.replace(" ", "").replace("\t", "").replace("\n", "")
@@ -160,6 +166,7 @@ class CompanyDriverMoreInfo(StatesGroup):
 @router.message(F.text == "More info (only for Company drivers)")
 async def start_CompanyDriverFilling(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         user_id = message.from_user.id
         driver = await get_by_id(user_id, "drivers")
 
@@ -184,6 +191,7 @@ async def start_CompanyDriverFilling(message: types.Message, state: FSMContext):
 @router.message(CompanyDriverMoreInfo.MilesDialy)
 async def ask_milesWeekly(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         await state.update_data(MilesDialy=message.text)
         await state.set_state(CompanyDriverMoreInfo.MilesWeekly)
         await message.answer("[2/6] Enter miles weekly: ")
@@ -194,6 +202,7 @@ async def ask_milesWeekly(message: types.Message, state: FSMContext):
 @router.message(CompanyDriverMoreInfo.MilesWeekly)
 async def ask_WorkDaysType(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         await state.update_data(MilesWeekly=message.text)
         await state.set_state(CompanyDriverMoreInfo.WorkDaysType)
         await message.answer("[3/6] Enter type for Work days: ", reply_markup=keyboars.weeks_months)
@@ -214,6 +223,7 @@ async def ask_WorkDays(message: types.Message, state: FSMContext):
 @router.message(CompanyDriverMoreInfo.WorkDays)
 async def ask_homeDays(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         await state.update_data(WorkDays=message.text)
         await state.set_state(CompanyDriverMoreInfo.HomeDays)
         await message.answer("[5/6] Enter home days: ")
@@ -224,6 +234,7 @@ async def ask_homeDays(message: types.Message, state: FSMContext):
 @router.message(CompanyDriverMoreInfo.HomeDays)
 async def ask_NightOrDayTimePU(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         await state.update_data(HomeDays=message.text)
         await state.set_state(CompanyDriverMoreInfo.NightOrDayTimePU)
         await message.answer("[6/6] Enter nighr or day time PU: ", reply_markup=keyboars.yes_no_skip)
@@ -234,6 +245,7 @@ async def ask_NightOrDayTimePU(message: types.Message, state: FSMContext):
 @router.message(CompanyDriverMoreInfo.NightOrDayTimePU)
 async def finish_CompanyDriverMoreInfo(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         await state.update_data(NightOrDayTimePU=message.text)
         data = await state.get_data()
         data.update({'id': message.from_user.id})
@@ -258,6 +270,7 @@ class CDL(StatesGroup):
 @router.message(F.text == "CDL")
 async def start_cdl(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         user_id = message.from_user.id
         driver = await get_by_id(user_id, "drivers")
         if not driver:
@@ -279,6 +292,7 @@ async def start_cdl(message: types.Message, state: FSMContext):
 @router.message(CDL.Cdl)
 async def ask_state(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         await state.update_data(Cdl=message.text)
         await state.set_state(CDL.StateOfCdl)
         await message.answer("[2/5] Enter state of CDL: ", reply_markup=keyboars.cancel)
@@ -289,6 +303,7 @@ async def ask_state(message: types.Message, state: FSMContext):
 @router.message(CDL.StateOfCdl)
 async def ask_class(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         await state.update_data(StateOfCdl=message.text)
         await state.set_state(CDL.Class)
         await message.answer("[3/5] Select your class? ", reply_markup=keyboars.driver_cdl_classes)
@@ -299,6 +314,7 @@ async def ask_class(message: types.Message, state: FSMContext):
 @router.message(CDL.Class)
 async def ask_expireDate(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         text = message.text
         if text.lower() not in "abcd":
             await message.answer("You should use buttons for answer!")
@@ -315,6 +331,7 @@ async def ask_expireDate(message: types.Message, state: FSMContext):
 @router.message(CDL.ExpireDate)
 async def ask_issueDate(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         await state.update_data(ExpireDate=message.text)
         await state.set_state(CDL.IssueDate)
         await message.answer("[5/5] Enter issue date, [month/day/year]: ", reply_markup=keyboars.cancel)
@@ -325,6 +342,7 @@ async def ask_issueDate(message: types.Message, state: FSMContext):
 @router.message(CDL.IssueDate)
 async def finish_cdl(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         await state.update_data(IssueDate=message.text)
         data = await state.get_data()
         data.update({'id': message.from_user.id})
@@ -348,6 +366,7 @@ class MedicalCard(StatesGroup):
 @router.message(F.text == "Medical Card")
 async def start_MedicalCardFilling(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         driver = await get_by_id(message.from_user.id, "drivers")
         if not driver:
             await message.answer("You must be driver!")
@@ -367,6 +386,7 @@ async def start_MedicalCardFilling(message: types.Message, state: FSMContext):
 @router.message(MedicalCard.NationalRegistry)
 async def ask_expirationdate(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         await state.update_data(NationalRegistry=message.text)
         await state.set_state(MedicalCard.ExpirationDate)
         await message.answer("[2/3] Enter expiration date: ")
@@ -376,6 +396,7 @@ async def ask_expirationdate(message: types.Message, state: FSMContext):
 @router.message(MedicalCard.ExpirationDate)
 async def ask_datecertified(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         await state.update_data(ExpirationDate=message.text)
         await state.set_state(MedicalCard.DateCertificateSigned)
         await message.answer("[3/3] Enter date certificate signed: ")
@@ -385,6 +406,7 @@ async def ask_datecertified(message: types.Message, state: FSMContext):
 @router.message(MedicalCard.DateCertificateSigned)
 async def finish_medicalCardInformation(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         await state.update_data(DateCertificateSigned=message.text)
         data = await state.get_data()
         data.update({'id': message.from_user.id})
@@ -401,6 +423,7 @@ class Note(StatesGroup):
 @router.message(F.text == "Note")
 async def ask_note(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         user_id = message.from_user.id
         driver = await get_by_id(user_id, "drivers")
         if not driver:
@@ -421,6 +444,7 @@ async def ask_note(message: types.Message, state: FSMContext):
 @router.message(Note.Note)
 async def finish_note(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         if not isinstance(message.text, str):
             await message.answer("Invalid input. Please enter text only.")
             return
@@ -453,6 +477,7 @@ class CDLStates(StatesGroup):
 @dp.message(F.text == "Upload CDL")
 async def startCdlUpload(message: Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         user_id = message.from_user.id
         driver = await get_by_id(user_id, "drivers")
         if not driver:
@@ -534,6 +559,7 @@ class ChangeCDLStates(StatesGroup):
 @router.message(F.text == "Change CDL")
 async def changeLastCdl(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         user_id = message.from_user.id
         last_cdl = await get_latest_by_date(user_id, "cdl_image", "created_date")
         if not last_cdl:
@@ -633,6 +659,7 @@ class MedicalCardImageStates(StatesGroup):
 @router.message(F.text == "Upload Medical Card")
 async def start_upload_medcard(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         user_id = message.from_user.id
         old_medical_card = await get_by_id(user_id, "medical_card_image")
         if old_medical_card:
@@ -649,6 +676,7 @@ async def start_upload_medcard(message: types.Message, state: FSMContext):
 @router.message(MedicalCardImageStates.Image, F.photo | F.document)
 async def save_medicalcard(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         file_id = None
 
         if message.photo:
@@ -691,6 +719,7 @@ class ChangeMedicalCardStates(StatesGroup):
 @router.message(F.text == "Change Medical Card")
 async def start_change_medcard_image(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         user_id = message.from_user.id
         old_medcard = await get_by_id(user_id, "medical_card_image")
         if not old_medcard:
@@ -711,7 +740,7 @@ async def start_change_medcard_image(message: types.Message, state: FSMContext):
 async def changeMedCardImage(message: types.Message, state: FSMContext):
     try:
         file_id = None
-
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         if message.photo:
             file_id = message.photo[-1].file_id
         elif message.document and message.document.mime_type.startswith("image"):
@@ -748,4 +777,90 @@ async def changeMedCardImage(message: types.Message, state: FSMContext):
 
     except Exception as e:
         print(e)
+        await message.answer("Something went wrong, /start - try again", reply_markup=types.ReplyKeyboardRemove())
+
+
+class TruckInfo(StatesGroup):
+    UnitNumber = State()
+    TruckMake = State()
+    TruckModel = State()
+    TruckYear = State()
+    RegisteredState = State()
+
+@router.message(F.text == "Truck Information")
+async def start_TruckInfoFilling(message: types.Message, state: FSMContext):
+    try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
+        user_id = message.from_user.id
+
+        truck_info = await get_by_id(user_id, "truck_info")
+        if truck_info:
+            await message.answer("You have already filled it")
+            return
+
+        driver = await get_by_id(user_id, "drivers")
+        if not driver:
+            await message.answer("You are not a driver!")
+            return
+
+        if driver['driver_type'] != "Owner driver":
+            await message.answer("This part is for only owner drivers!")
+            return
+
+        await state.set_state(TruckInfo.UnitNumber)
+        await message.answer("[1/5] Enter truck unit number: ", reply_markup=cancel)
+    except:
+        await message.answer("Something went wrong, /start - try again", reply_markup=types.ReplyKeyboardRemove())
+
+@router.message(TruckInfo.UnitNumber)
+async def ask_TruckMake(message: types.Message, state: FSMContext):
+    try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
+        await state.update_data(UnitNumber=message.text)
+        await state.set_state(TruckInfo.TruckMake)
+        await message.answer("[2/5] Enter truck make: ")
+    except:
+        await message.answer("Something went wrong, /start - try again", reply_markup=types.ReplyKeyboardRemove())
+
+@router.message(TruckInfo.TruckMake)
+async def ask_TruckModel(message: types.Message, state: FSMContext):
+    try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
+        await state.update_data(TruckMake=message.text)
+        await state.set_state(TruckInfo.TruckModel)
+        await message.answer("[3/5] Enter truck model: ")
+    except:
+        await message.answer("Something went wrong, /start - try again", reply_markup=types.ReplyKeyboardRemove())
+
+@router.message(TruckInfo.TruckModel)
+async def ask_TruckYear(message: types.Message, state: FSMContext):
+    try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
+        await state.update_data(TruckModel=message.text)
+        await state.set_state(TruckInfo.TruckYear)
+        await message.answer("[4/5] Enter truck year: ")
+    except:
+        await message.answer("Something went wrong, /start - try again", reply_markup=types.ReplyKeyboardRemove())
+
+@router.message(TruckInfo.TruckYear)
+async def ask_RegisteredState(message: types.Message, state: FSMContext):
+    try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
+        await state.update_data(TruckYear=message.text)
+        await state.set_state(TruckInfo.RegisteredState)
+        await message.answer("[5/5] Enter truck registered state: ")
+    except:
+        await message.answer("Something went wrong, /start - try again", reply_markup=types.ReplyKeyboardRemove())
+
+@router.message(TruckInfo.RegisteredState)
+async def finish_TruckInfo(message: types.Message, state: FSMContext):
+    try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
+        await state.update_data(RegisteredState=message.text)
+        data = await state.get_data()
+        data.update({'id': message.from_user.id})
+        await save_truck_info(data)
+        await state.clear()
+        await message.answer("Good! Keep using...", reply_markup=driver_main_menu)
+    except:
         await message.answer("Something went wrong, /start - try again", reply_markup=types.ReplyKeyboardRemove())

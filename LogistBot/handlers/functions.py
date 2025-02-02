@@ -1,6 +1,11 @@
 from db import *
 from keyboars import *
 import os
+from config import USER_ACTIVITY
+from datetime import datetime, timedelta
+import asyncio
+from bot_instance import bot
+from random import randint
 
 
 async def get_company_full_info(company: dict, user_id):
@@ -49,7 +54,10 @@ async def get_driver_full_info(driver: dict, user_id) -> str:
     # medical_card = await get_by_id(user_id, "MedicalCards")
     # if medical_card:
     #     info.append(f"\nℹ️Medical card\nNational Registry: {medical_card['national_registry']}\nExpiration Date: {medical_card['expiration_date']}\nDate of Certificate {medical_card['date_certificate_signed']}")
-
+    truck_info = await get_by_id(user_id, "truck_info")
+    if truck_info:
+        info.append(f"ℹ️Truck info\nUnit number: {truck_info['unit_number']}\nTruck make: {truck_info['truck_make']}\nTruck model: {truck_info['truck_model']}\nTruck year: {truck_info['truck_year']}\nRegistered state: {truck_info['registered_state']}")
+   
     return info
 
 
@@ -111,6 +119,19 @@ async def deleteAllData(user_id):
         driver_status = await get_by_id(user_id, "DriverStatus")
         if driver_status:
             await delete_by_id(user_id, "DriverStatus")
+
+        company_status = await get_by_id(user_id, "CompanyStatus")
+        if company_status:
+            await delete_by_id(user_id, "CompanyStatus")
+
+        company_filter = await get_by_id(user_id, "CompanyFilter")
+        if company_filter:
+            await delete_by_id(user_id, "CompanyFilter")   
+
+        truck_info = await get_by_id(user_id, "truck_info")
+        if truck_info:
+            await delete_by_id(user_id, "truck_info") 
+
     except Exception as ex:
         print(f"Exception while erasing: {ex}")
         

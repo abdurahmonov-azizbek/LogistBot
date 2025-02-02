@@ -9,7 +9,9 @@ from .functions import *
 import keyboars
 import asyncio
 from bot_instance import bot
-from config import BOT_LINK
+from config import BOT_LINK, USER_ACTIVITY
+from datetime import datetime
+from random import randint
 
 
 router = Router()
@@ -19,6 +21,7 @@ router = Router()
 async def show_account(message: types.Message):
     # try to get company
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         message.reply("wait...")
         user_id = message.from_user.id
         company = await get_by_id(user_id, "companies")
@@ -66,6 +69,7 @@ async def show_account(message: types.Message):
 # Qo'shimcha malumotlarni qabul qilib olish
 @router.message(F.text == "Add Informationℹ️")
 async def show_options(message: types.Message):
+    USER_ACTIVITY[message.from_user.id] = datetime.now()
     await message.answer("Wait...")
     user_id = message.from_user.id
     company = await get_by_id(user_id, "companies")
@@ -132,6 +136,10 @@ async def show_options(message: types.Message):
         else:
             driver_info_menu.append([KeyboardButton(text="Change Medical Card")])
 
+        if(driver['driver_type'] == "Owner driver"):
+            truck_info = await get_by_id(driver['id'], "truck_info")
+            if not truck_info:
+                driver_info_menu.append([KeyboardButton(text="Truck Information")])
 
         driver_info_menu.append([KeyboardButton(text="◀️Back to Main Menu")])
 
@@ -143,6 +151,8 @@ async def show_options(message: types.Message):
 @router.message(F.text == "◀️Back to Main Menu")
 async def go_back_menu(message: types.Message):
     company = await get_by_id(message.from_user.id, "companies")
+    USER_ACTIVITY[message.from_user.id] = datetime.now()
+
     if company:
         await message.answer("Your role: Carrier\nWelcome...", reply_markup=keyboars.carrier_main_menu)
         return
@@ -163,6 +173,7 @@ class EditState(StatesGroup):
 @router.message(F.text == "Edit✏️")
 async def handle_edit(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         user_id = message.from_user.id
         company = await get_by_id(user_id, "companies")
         if company:
@@ -181,6 +192,10 @@ async def handle_edit(message: types.Message, state: FSMContext):
             for value in keyboars.driver_tables.values():
                 driver_tables_keyboard.append([KeyboardButton(text=value)])
             
+            truck_info = await get_by_id(driver['id'], "truck_info")
+            if truck_info:
+                driver_tables_keyboard.append([KeyboardButton(text="Truck Information")])
+
             driver_tables_keyboard.append([KeyboardButton(text="Cancel⬅️")])
             await state.set_state(EditState.TableName)
             await message.answer("Select table you want to change info:", reply_markup=ReplyKeyboardMarkup(resize_keyboard=True, keyboard=driver_tables_keyboard))
@@ -193,7 +208,7 @@ async def handle_edit(message: types.Message, state: FSMContext):
 async def ask_Column(message: types.Message, state: FSMContext):
     try:
         table = message.text
-        if table not in keyboars.company_tables.values() and table not in keyboars.driver_tables.values():
+        if table != "Truck Information" and table not in keyboars.company_tables.values() and table not in keyboars.driver_tables.values():
             await message.answer("Use buttons!")
             return
 
@@ -206,6 +221,8 @@ async def ask_Column(message: types.Message, state: FSMContext):
             for key, value in keyboars.driver_tables.items():
                 if value == message.text:
                     table = key
+            if message.text == "Truck Information":
+                table = "truck_info"
 
         if key == "":
             await message.answer("Invalid input. Please use buttons!")
@@ -229,6 +246,9 @@ async def ask_Column(message: types.Message, state: FSMContext):
         elif table == "OwnerDriverOffers":
             for value in keyboars.OwnerDriverOffers_columns.values():
                 columns_keyboard.append([KeyboardButton(text=value)])  
+        elif table == "truck_info":
+            for value in keyboars.truck_info_columns.values():
+                columns_keyboard.append([KeyboardButton(text=value)])
         elif table == "drivers":
             driver = await get_by_id(message.from_user.id, "drivers")
             if driver['driver_type'] == 'Company driver':
@@ -261,6 +281,7 @@ async def ask_Column(message: types.Message, state: FSMContext):
 @router.message(EditState.Column)
 async def ask_NewValue(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         data = await state.get_data()
         user_id = message.from_user.id
         table = data['TableName']
@@ -306,7 +327,12 @@ async def ask_NewValue(message: types.Message, state: FSMContext):
                 if value == column:
                     column = key
                     break
-
+        elif table == "truck_info":
+            for key, value in keyboars.truck_info_columns.items():
+                if value == column:
+                    column = key
+                    break
+            
 
         old_value = await  get_one_column(table, column, user_id)
         # if old_value is None:
@@ -322,6 +348,7 @@ async def ask_NewValue(message: types.Message, state: FSMContext):
 @router.message(EditState.NewValue)
 async def checkAndUpdateColumn(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         user_id = message.from_user.id
         await state.update_data(NewValue=message.text)
         data = await state.get_data()
@@ -387,8 +414,44 @@ async def checkBalance(id) -> bool:
 @router.message(F.text == "Invite friends🔗")
 async def getRefLink(message: types.Message):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         user_id = message.from_user.id
         reflink = f"{BOT_LINK}?start={user_id}"
         await message.answer(f"🔗Your invite link: {reflink}")
     except:
         await message.answer("Something wrong, Please try again.")
+
+async def start_track_activity():
+    """Periodically checks for inactive users and sends reminders."""
+    while True:
+        print("Starting track activities....")
+        try:
+            sent_ids = []  # Track users we sent messages to
+
+            # Iterate through the dictionary of user activities
+            for user_id, last_activity in list(USER_ACTIVITY.items()):
+                inactive_period = datetime.now() - last_activity
+
+                if inactive_period > timedelta(days=3):
+                    try:
+                        # Send reminder message to inactive users
+                        await bot.send_message(user_id, "Hey, are you sleeping? Use the bot! 😊")
+                        sent_ids.append(user_id)
+                        print(f"Reminder sent to user {user_id}")
+
+                    except Exception as e:
+                        # Log error (e.g., user blocked the bot, chat not found, etc.)
+                        print(f"Failed to send message to user {user_id}: {e}")
+
+            # Optionally: Update the activity timestamp for users we contacted
+            for user_id in sent_ids:
+                if user_id in USER_ACTIVITY:
+                    USER_ACTIVITY[user_id] = datetime.now()
+
+        except Exception as e:
+            # Log unexpected errors
+            print(f"Unexpected error in start_track_activity: {e}")
+
+        # Sleep for a random interval between 2 and 24 hours
+        random_time = randint(7200, 86400)  # Random time in seconds (2 to 24 hours)
+        await asyncio.sleep(random_time)

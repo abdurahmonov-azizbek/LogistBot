@@ -14,7 +14,7 @@ carrier_main_menu = ReplyKeyboardMarkup(
     resize_keyboard=True,
     keyboard=[
         [KeyboardButton(text="Search Drivers🔍"), KeyboardButton(text="Account")],
-        [KeyboardButton(text="Add Informationℹ️"), KeyboardButton(text="Settings⚙️")],
+        [KeyboardButton(text="Add Informationℹ️"), KeyboardButton(text="Status🔧")],
         [KeyboardButton(text="Delete Account❌"), KeyboardButton(text="Edit✏️")],
         [KeyboardButton(text="Invite friends🔗"), KeyboardButton(text="Support🔧")]
     ],
@@ -44,6 +44,7 @@ driver_info_menu = ReplyKeyboardMarkup(
         [KeyboardButton(text="Change CDL")],
         [KeyboardButton(text="Upload Medical Card")],
         [KeyboardButton(text="Change Medical Card")],
+        [KeyboardButton(text="Truck Information")],
         [KeyboardButton(text="◀️Back to Main Menu")],
     ],
 )
@@ -390,6 +391,14 @@ drivers_columns = {
     "work_days": "Work days",
     "home_days": "Home days",
     "nigth_or_day_time_PU": "Night or day time PU"
+}
+
+truck_info_columns = {
+    "unit_number": "Unit Number",
+    "truck_make": "Truck make",
+    "truck_model": "Truck model",
+    "truck_year": "Truck year",
+    "registered_state": "Registered state"
 }
 
 cdls_columns = {

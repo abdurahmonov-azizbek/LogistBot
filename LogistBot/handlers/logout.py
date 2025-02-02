@@ -4,6 +4,8 @@ from aiogram.fsm.state import StatesGroup, State
 from db import *
 import keyboars
 from .functions import *
+from config import USER_ACTIVITY
+from datetime import datetime
 
 router = Router()
 
@@ -13,6 +15,7 @@ class LogOut(StatesGroup):
 @router.message(F.text == "Delete Account❌")
 async def startLogOut(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         await state.set_state(LogOut.Answer)
         await message.answer("You sure that, if you log out your all data will be deleted? ", reply_markup=keyboars.yes_no)
     except:

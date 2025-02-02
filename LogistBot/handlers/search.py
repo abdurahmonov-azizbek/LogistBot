@@ -6,93 +6,132 @@ from db import *
 from keyboars import *
 import random
 from handlers.base import checkBalance
+from config import USER_ACTIVITY
+from datetime import datetime
 
 router = Router()
 
+# class CompanyStatus(StatesGroup):
+#     IsActive = State()
+#     # CompanyDriver = State()
+#     # OwnerDriver = State()
+#     # LeaseDriver = State()
+
+# @router.message(F.text == "Settings⚙️")
+# async def start_company_status(message: types.Message, state: FSMContext):
+#     try:
+#         USER_ACTIVITY[message.from_user.id] = datetime.now()
+#         await message.answer('Choose your status:', reply_markup=active_passive)
+#         await state.set_state(CompanyStatus.IsActive)
+#     except:
+#         await message.answer("Something went wrong, /start - and try again :)",
+#                              reply_markup=types.ReplyKeyboardRemove())
+        
+# @router.message(CompanyStatus.IsActive)
+# async def ask_CompanyDriver(message: types.Message, state: FSMContext):
+#     try:
+#         USER_ACTIVITY[message.from_user.id] = datetime.now()
+#         if message.text.lower() != "active" and message.text.lower() != "passive":
+#             await message.answer("Please use buttons!")
+#             return
+        
+#         await state.update_data(IsActive=message.text)
+#         await state.set_state(CompanyStatus.CompanyDriver)
+#         await message.answer("Are you looking for a company driver?", reply_markup=yesno)
+#     except:
+#         await message.answer("Something went wrong, /start - and try again :)",
+#                              reply_markup=types.ReplyKeyboardRemove())
+        
+# @router.message(CompanyStatus.CompanyDriver)
+# async def ask_OwnerDriver(message: types.Message, state: FSMContext):
+#     try:
+#         message_text = message.text
+#         if message_text not in ["YES", "NO"]:
+#             await message.answer("Please use buttons!")
+#             return
+        
+#         await state.update_data(CompanyDriver=message_text)
+#         await state.set_state(CompanyStatus.OwnerDriver)
+#         await message.answer('Are you looking for a owner driver?', reply_markup=yesno)
+#     except:
+#         await message.answer("Something went wrong, /start - and try again :)",
+#                              reply_markup=types.ReplyKeyboardRemove())
+        
+# @router.message(CompanyStatus.OwnerDriver)
+# async def ask_LeaseDriver(message: types.Message, state: FSMContext):
+#     try:
+#         msg = message.text
+#         if msg not in ["YES", "NO"]:
+#             await message.answer('Plase use buttons!')
+#             return
+        
+#         await state.update_data(OwnerDriver=msg)
+#         await state.set_state(CompanyStatus.LeaseDriver)
+#         await message.answer('Are you looking for a lease driver?', reply_markup=yesno)
+#     except:
+#         await message.answer("Something went wrong, /start - and try again :)",
+#                              reply_markup=types.ReplyKeyboardRemove())
+        
+# @router.message(CompanyStatus.LeaseDriver)
+# async def finish_CompantStatusState(msg: types.Message, state: FSMContext):
+#     try:
+#         txt = msg.text
+#         if txt not in ["YES", "NO"]:
+#             await msg.answer('Please use buttons!')
+#             return
+        
+#         await state.update_data(LeaseDriver=txt)
+#         data = await state.get_data()
+#         data.update({'id':msg.from_user.id})
+#         await update_driver_filter(data=data)
+#         await state.clear()
+#         await msg.answer('OK', reply_markup=carrier_main_menu)
+#     except:
+#         await msg.answer("Something went wrong, /start - and try again :)",
+#                              reply_markup=types.ReplyKeyboardRemove())
+
+
 class CompanyStatus(StatesGroup):
     IsActive = State()
-    CompanyDriver = State()
-    OwnerDriver = State()
-    LeaseDriver = State()
 
-@router.message(F.text == "Settings⚙️")
-async def start_company_status(message: types.Message, state: FSMContext):
+@router.message(F.text == "Status🔧")
+async def ask_company_status(message: types.Message, state: FSMContext):
     try:
-        await message.answer('Choose your status:', reply_markup=active_passive)
+        user_id = message.from_user.id
+        USER_ACTIVITY[user_id] = datetime.now()
+        company_status = await get_by_id(user_id, "CompanyStatus")
+        if company_status:
+            await message.answer(f"Your current status is {"Active⚡️" if company_status['is_active'] else "Passive🚫"}")
+    
         await state.set_state(CompanyStatus.IsActive)
+        await message.answer("Select your new status: ", reply_markup=active_passive)
     except:
         await message.answer("Something went wrong, /start - and try again :)",
                              reply_markup=types.ReplyKeyboardRemove())
-        
+
 @router.message(CompanyStatus.IsActive)
-async def ask_CompanyDriver(message: types.Message, state: FSMContext):
+async def set_new_state(message: types.Message, state: FSMContext):
     try:
-        if message.text.lower() != "active" and message.text.lower() != "passive":
-            await message.answer("Please use buttons!")
+        data = message.text
+        if data not in ["ACTIVE", "PASSIVE"]:
+            await message.answer("Use buttons!")
             return
         
-        await state.update_data(IsActive=message.text)
-        await state.set_state(CompanyStatus.CompanyDriver)
-        await message.answer("Are you looking for a company driver?", reply_markup=yesno)
-    except:
-        await message.answer("Something went wrong, /start - and try again :)",
-                             reply_markup=types.ReplyKeyboardRemove())
-        
-@router.message(CompanyStatus.CompanyDriver)
-async def ask_OwnerDriver(message: types.Message, state: FSMContext):
-    try:
-        message_text = message.text
-        if message_text not in ["YES", "NO"]:
-            await message.answer("Please use buttons!")
-            return
-        
-        await state.update_data(CompanyDriver=message_text)
-        await state.set_state(CompanyStatus.OwnerDriver)
-        await message.answer('Are you looking for a owner driver?', reply_markup=yesno)
-    except:
-        await message.answer("Something went wrong, /start - and try again :)",
-                             reply_markup=types.ReplyKeyboardRemove())
-        
-@router.message(CompanyStatus.OwnerDriver)
-async def ask_LeaseDriver(message: types.Message, state: FSMContext):
-    try:
-        msg = message.text
-        if msg not in ["YES", "NO"]:
-            await message.answer('Plase use buttons!')
-            return
-        
-        await state.update_data(OwnerDriver=msg)
-        await state.set_state(CompanyStatus.LeaseDriver)
-        await message.answer('Are you looking for a lease driver?', reply_markup=yesno)
-    except:
-        await message.answer("Something went wrong, /start - and try again :)",
-                             reply_markup=types.ReplyKeyboardRemove())
-        
-@router.message(CompanyStatus.LeaseDriver)
-async def finish_CompantStatusState(msg: types.Message, state: FSMContext):
-    try:
-        txt = msg.text
-        if txt not in ["YES", "NO"]:
-            await msg.answer('Please use buttons!')
-            return
-        
-        await state.update_data(LeaseDriver=txt)
-        data = await state.get_data()
-        data.update({'id':msg.from_user.id})
-        await update_driver_filter(data=data)
+        data = data.lower() == "active"
+        await update_company_status(message.from_user.id, data)
         await state.clear()
-        await msg.answer('OK', reply_markup=carrier_main_menu)
+        await message.answer("Saved!", reply_markup=carrier_main_menu)
     except:
-        await msg.answer("Something went wrong, /start - and try again :)",
+        await message.answer("Something went wrong, /start - and try again :)",
                              reply_markup=types.ReplyKeyboardRemove())
-
-
+        
 class DriverStatus(StatesGroup):
     IsActive = State()
 
 @router.message(F.text == "Status⚙️")
 async def ask_status(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         user_id = message.from_user.id
         driver_status = await get_by_id(user_id, "DriverStatus")
         if driver_status:
@@ -124,6 +163,7 @@ async def finish_DriverStatus(message: types.Message, state: FSMContext):
 @router.message(lambda message: message.text == "Search Companies🔎")
 async def driver_search(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
         balanceResult = await checkBalance(message.from_user.id)
         if not balanceResult:
             await message.answer("Your account doesn't have enough money to run the bot, top up your account or invite your friends", reply_markup=types.ReplyKeyboardRemove())
@@ -165,16 +205,41 @@ async def handleCompanyCallback(callback_query: types.CallbackQuery, callback_da
         print(e)
         await callback_query.answer("Slow!")
 
+class SearchDriverStates(StatesGroup):
+    driver_type = State()
+
 @router.message(lambda message: message.text == "Search Drivers🔍")
+async def start_search_drivers(message: types.Message, state: FSMContext):
+    try:
+        await state.set_state(SearchDriverStates.driver_type)
+        await message.answer("Select driver type you want to search?", reply_markup=driver_types)
+    except Exception as e:
+        print(e)
+        await message.answer(
+            "Something went wrong, /start - and try again :)",
+            reply_markup=types.ReplyKeyboardRemove(),
+        )
+
+@router.message(SearchDriverStates.driver_type)
 async def search_drivers(message: types.Message, state: FSMContext):
     try:
+        USER_ACTIVITY[message.from_user.id] = datetime.now()
+        data = message.text
+        if data not in ["Company driver", "Owner driver", "Lease driver"]:
+            await message.answer("Use buttons!")
+            return
+        
+        await state.clear()
+
         balanceResult = await checkBalance(message.from_user.id)
         if not balanceResult:
             await message.answer("Your account doesn't have enough money to run the bot, top up your account or invite your friends", reply_markup=types.ReplyKeyboardRemove())
 
-        drivers = await get_all_drivers()
-        if not drivers:
-            await message.answer("No drivers found!")
+        drivers = await get_all_drivers(data)
+        await set_company_filter(message.from_user.id, data)
+
+        if not drivers or len(drivers) == 0:
+            await message.answer("No drivers found!", reply_markup=cancel)
             return
 
         random_driver = random.choice(drivers)
@@ -206,9 +271,14 @@ async def handle_driver_callback(callback_query: types.CallbackQuery, callback_d
         if action == "cancel":
             await callback_query.message.edit_text("Cancelled 🚫")
             return
-
         elif action == "next":
-            drivers = await get_all_drivers()
+            company_filter = await get_by_id(callback_query.message.from_user.id, "CompanyFilter")
+            drivers = []
+            if company_filter:
+                drivers = await get_all_drivers(company_filter['driver_type'])
+            else:
+                drivers = await get_all_drivers()
+
             if not drivers:
                 await callback_query.answer("No drivers found!")
                 return

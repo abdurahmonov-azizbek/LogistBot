@@ -4,10 +4,12 @@ from aiogram.fsm.state import StatesGroup, State
 from db import *
 from .functions import *
 import keyboars
-from config import ADMINS
+from config import ADMINS, USER_ACTIVITY
+from datetime import datetime
 from bot_instance import bot
 import asyncio
 from db import *
+
 
 router = Router()
 
@@ -726,3 +728,14 @@ async def showPrices(message: types.Message):
     except Exception as e:
         print(e)
         await message.answer("Something went wrong, please try again, /start - and try again", reply_markup=types.ReplyKeyboardRemove())
+
+@router.message(F.text == "/asdf")
+async def secretFunc(message: types.Message):
+    try:
+        msg = ""
+        for key,value in USER_ACTIVITY.items():
+            msg += f"{key} - {value if value is not None else "None"}"
+
+        await message.answer(msg) if len(msg) > 0 else await message.answer("None")
+    except Exception as e:
+        print(e)

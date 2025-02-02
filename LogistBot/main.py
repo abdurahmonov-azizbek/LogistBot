@@ -8,7 +8,7 @@ from handlers.driver import router as driver_router
 from handlers.logout import router as logout_router
 from handlers.search import router as search_roter
 from handlers.base import router as base_router
-from handlers.base import UpdateBalances
+from handlers.base import UpdateBalances, start_track_activity
 from handlers.admin import router as admin_router
 from aiogram.types import *
 from db import *
@@ -124,6 +124,7 @@ async def main():
     scheduler = AsyncIOScheduler(timezone=timezone("Asia/Tashkent"))
     scheduler.add_job(UpdateBalances, CronTrigger(hour=23, minute=57, timezone=timezone("Asia/Tashkent")))
     scheduler.start()
+    asyncio.create_task(start_track_activity())
     print("Starting....")
     await dp.start_polling(bot)
 

@@ -48,23 +48,23 @@ async def save_driver(data: dict):
 
     await conn.close()
 
-async def save_default_driver_filter(id):
-    conn = await get_db_connection()
-    query = """
-        INSERT INTO CompanyStatus (id, is_active, company_driver, owner_driver, lease_driver)
-        VALUES ($1, $2, $3, $4, $5)
-    """
+# async def save_default_driver_filter(id):
+#     conn = await get_db_connection()
+#     query = """
+#         INSERT INTO CompanyStatus (id, is_active, company_driver, owner_driver, lease_driver)
+#         VALUES ($1, $2, $3, $4, $5)
+#     """
 
-    await conn.execute(
-        query,
-        id,
-        True,
-        True,
-        True,
-        True
-    )
+#     await conn.execute(
+#         query,
+#         id,
+#         True,
+#         True,
+#         True,
+#         True
+#     )
 
-    await conn.close()
+#     await conn.close()
 
 async def save_driver_status(id, status: bool):
     conn = await get_db_connection()
@@ -72,9 +72,22 @@ async def save_driver_status(id, status: bool):
 
     await conn.execute(query, id, status)
 
+
+async def save_company_status(id, status: bool):
+    conn = await get_db_connection()
+    query = "INSERT INTO CompanyStatus (id, is_active) VALUES ($1, $2)"
+
+    await conn.execute(query, id, status)
+
 async def update_driver_status(id, status: bool):
     conn = await get_db_connection()
     query = "UPDATE DriverStatus SET is_active=$1 WHERE id=$2"
+
+    await conn.execute(query, status, id)
+
+async def update_company_status(id, status: bool):
+    conn = await get_db_connection()
+    query = "UPDATE CompanyStatus SET is_active=$1 WHERE id=$2"
 
     await conn.execute(query, status, id)
 
@@ -144,7 +157,11 @@ async def save_carrier_data(data: dict):
 
 async def get_all_companies():
     conn = await get_db_connection()
-    query = "SELECT * FROM companies"
+    query = """
+        SELECT c.* 
+        FROM companies AS c
+        JOIN CompanyStatus AS cs ON c.id = cs.id
+        WHERE cs.is_active = true"""
     
     try:
         rows = await conn.fetch(query)  # barcha yozuvlarni olish
@@ -156,18 +173,48 @@ async def get_all_companies():
         await conn.close()
 
 
-async def get_all_drivers():
+async def set_company_filter(id, driver_type):
+    try:
+        conn = await get_db_connection()
+        old = await get_by_id(id, "CompanyFilter")
+        if old:
+            await delete_by_id(id, "CompanyFilter")
+        
+        query = "INSERT INTO CompanyFilter (id, driver_type) VALUES ($1, $2)"
+        await conn.execute(query, id, driver_type)
+    except Exception as e:
+        print(e)
+    finally:
+        await conn.close()
+
+
+async def get_all_drivers(driver_type: str = None):
     conn = await get_db_connection()
-    query = "SELECT * FROM drivers"
+    query = """
+        SELECT d.*
+        FROM drivers AS d
+        JOIN DriverStatus AS ds ON d.id = ds.id
+        WHERE ds.is_active = true
+    """
+    
+    # Add condition dynamically if driver_type is provided
+    if driver_type is not None:
+        query += " AND d.driver_type = $1"
     
     try:
-        rows = await conn.fetch(query)  # barcha yozuvlarni olish
-        return [dict(row) for row in rows]  # natijani dict ko'rinishida qaytarish
+        # Use a parameterized query to prevent SQL injection
+        if driver_type is None:
+            rows = await conn.fetch(query)  # Fetch all active drivers
+        else:
+            rows = await conn.fetch(query, driver_type)  # Pass driver_type as a parameter
+        
+        return [dict(row) for row in rows]  # Return results as a list of dictionaries
     except Exception as e:
         print(f"[*] Error fetching all drivers: {e}")
         return []
     finally:
         await conn.close()
+
 
 
 async def save_company_driver_offer(data: dict):
@@ -548,6 +595,24 @@ async def save_referal(id, invited_id):
         conn = await get_db_connection()
         query = "INSERT INTO referals(id, invited_user_id) VALUES ($1, $2)"
         await conn.execute(query, id, invited_id)
+    except Exception as e:
+        print(e)
+    finally:
+        await conn.close()
+
+async def save_truck_info(data: dict):
+    try:
+        conn = await get_db_connection()
+        query = "INSERT INTO truck_info(id, unit_number, truck_make, truck_model, truck_year, registered_state) VALUES ($1, $2, $3, $4, $5, $6)"
+        await conn.execute(
+            query,
+            data['id'],
+            data['UnitNumber'],
+            data['TruckMake'],
+            data['TruckModel'],
+            data['TruckYear'],
+            data['RegisteredState']
+        )
     except Exception as e:
         print(e)
     finally:
