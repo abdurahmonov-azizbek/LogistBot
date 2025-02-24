@@ -14,9 +14,9 @@ carrier_main_menu = ReplyKeyboardMarkup(
     resize_keyboard=True,
     keyboard=[
         [KeyboardButton(text="Search Drivers🔍"), KeyboardButton(text="Account")],
-        [KeyboardButton(text="Add Informationℹ️"), KeyboardButton(text="Status🔧")],
+        [KeyboardButton(text="Add Informationℹ️"), KeyboardButton(text="Status🔄")],
         [KeyboardButton(text="Delete Account❌"), KeyboardButton(text="Edit✏️")],
-        [KeyboardButton(text="Invite friends🔗"), KeyboardButton(text="Support🔧")]
+        [KeyboardButton(text="Invite friends🔗"), KeyboardButton(text="Support💬")]
     ],
 )
 
@@ -89,9 +89,9 @@ driver_main_menu = ReplyKeyboardMarkup(
     resize_keyboard=True,
     keyboard=[
         [KeyboardButton(text="Search Companies🔎"), KeyboardButton(text="Account")],
-        [KeyboardButton(text="Add Informationℹ️"), KeyboardButton(text="Status⚙️")],
+        [KeyboardButton(text="Add Informationℹ️"), KeyboardButton(text="Status 🔄")],
         [KeyboardButton(text="Delete Account❌"), KeyboardButton(text="Edit✏️")],
-        [KeyboardButton(text="Invite friends🔗"), KeyboardButton(text="Support🔧")]
+        [KeyboardButton(text="Invite friends🔗"), KeyboardButton(text="Support💬")]
     ],
 )
 
@@ -121,7 +121,7 @@ driver_cdl_classes = ReplyKeyboardMarkup(
 active_passive = ReplyKeyboardMarkup(
     resize_keyboard=True,
     keyboard=[
-        [KeyboardButton(text="ACTIVE"), KeyboardButton(text="PASSIVE")],
+        [KeyboardButton(text="ACTIVE"), KeyboardButton(text="INACTIVE")],
         [KeyboardButton(text="Cancel⬅️")],
     ],
 )

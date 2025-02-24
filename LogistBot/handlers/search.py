@@ -94,7 +94,7 @@ router = Router()
 class CompanyStatus(StatesGroup):
     IsActive = State()
 
-@router.message(F.text == "Status🔧")
+@router.message(F.text == "Status🔄")
 async def ask_company_status(message: types.Message, state: FSMContext):
     try:
         user_id = message.from_user.id
@@ -113,7 +113,7 @@ async def ask_company_status(message: types.Message, state: FSMContext):
 async def set_new_state(message: types.Message, state: FSMContext):
     try:
         data = message.text
-        if data not in ["ACTIVE", "PASSIVE"]:
+        if data not in ["ACTIVE", "INACTIVE"]:
             await message.answer("Use buttons!")
             return
         
@@ -128,7 +128,7 @@ async def set_new_state(message: types.Message, state: FSMContext):
 class DriverStatus(StatesGroup):
     IsActive = State()
 
-@router.message(F.text == "Status⚙️")
+@router.message(F.text == "Status 🔄")
 async def ask_status(message: types.Message, state: FSMContext):
     try:
         USER_ACTIVITY[message.from_user.id] = datetime.now()
